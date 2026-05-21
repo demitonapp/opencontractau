@@ -116,13 +116,63 @@ This project:
 - Rate-limits to one request per three seconds on live scrapers
 - Honours takedown requests (open a GitHub issue)
 
+## Self-hosting
+
+This repository publishes the *code*, not the data.
+
+To use the normalised corpus without running your own scrapers, sign up at
+[demiton.io](https://demiton.io) (free Public tier - no credit card required).
+The Public tier exposes the full indexed corpus via the REST API and MCP.
+
+To run the scrapers yourself:
+
+```bash
+git clone https://github.com/demitonapp/au-procurement
+cd au-procurement
+pip install -e .       # or: uv pip install -e .
+
+# CLI - write OCDS JSON to a file
+au-procurement qld --output output/qld.json
+au-procurement qld --all --output output/qld-all.json
+
+# Python API - use in your own code
+import asyncio
+from au_procurement import fetch_releases
+
+package = asyncio.run(fetch_releases("ACT"))
+print(f"Fetched {len(package.releases)} releases")
+
+# Filter by date (supported on ACT and NSW_LIVE)
+from datetime import date
+package = asyncio.run(fetch_releases("ACT", since=date(2025, 1, 1)))
+```
+
+Available jurisdiction keys for the Python API:
+
+| Key | Jurisdiction |
+|---|---|
+| `ACT` | Australian Capital Territory (Socrata) |
+| `QLD_TMR` | Queensland TMR contract disclosure |
+| `QLD_MULTI` | Queensland multi-agency (8 agencies) |
+| `NSW_LIVE` | New South Wales live (buy.nsw.gov.au) |
+| `NSW_HISTORICAL` | New South Wales historical archive (2005-2025) |
+| `NT` | Northern Territory |
+| `TAS` | Tasmania |
+| `VIC` | Victoria (requires Chrome TLS impersonation via curl_cffi) |
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). NSW and Queensland are the first jurisdictions; Victoria, South Australia, Western Australia, ACT, Northern Territory, and Tasmania follow.
 
 ## Relation to Demiton
 
-[Demiton](https://demiton.io) is the first consumer of this dataset. When this open source feed covers a jurisdiction, Demiton removes its own state-specific scraping code and consumes the community data like everyone else.
+[Demiton](https://demiton.io) is the primary operational consumer of this library. It vendors
+au-procurement as a Python dependency and indexes the OCDS output into its market intelligence
+corpus. When this library supports a jurisdiction, Demiton removes its own state-specific scraping
+code and consumes the community data through the same `fetch_releases()` API that anyone else can use.
+
+The corpus output is not published as bulk downloadable artifacts. The legitimate public consumption
+surface is Demiton's [Public tier](https://demiton.io) (rate-limited API and MCP, free registration).
 
 ## License
 
