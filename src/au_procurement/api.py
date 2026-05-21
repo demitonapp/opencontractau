@@ -33,14 +33,16 @@ logger = logging.getLogger(__name__)
 # The module must expose an async ``scrape(**kwargs) -> ReleasePackage``.
 
 _JURISDICTION_SCRAPERS: dict[str, str] = {
-    "ACT":           "au_procurement.scrapers.act.scraper",
-    "QLD_TMR":       "au_procurement.scrapers.qld.tmr",
-    "QLD_MULTI":     "au_procurement.scrapers.qld.ckan",
-    "NSW_LIVE":      "au_procurement.scrapers.nsw.live",
+    "ACT":            "au_procurement.scrapers.act.scraper",
+    "QLD_TMR":        "au_procurement.scrapers.qld.tmr",
+    "QLD_MULTI":      "au_procurement.scrapers.qld.ckan",
+    "NSW_LIVE":       "au_procurement.scrapers.nsw.live",
     "NSW_HISTORICAL": "au_procurement.scrapers.nsw.historical",
-    "NT":            "au_procurement.scrapers.nt.scraper",
-    "TAS":           "au_procurement.scrapers.tas.scraper",
-    "VIC":           "au_procurement.scrapers.vic.scraper",
+    "NT":             "au_procurement.scrapers.nt.scraper",
+    "TAS":            "au_procurement.scrapers.tas.scraper",
+    "VIC":            "au_procurement.scrapers.vic.scraper",
+    # Federal
+    "AUSTENDER":      "au_procurement.scrapers.federal.scraper",
 }
 
 
@@ -109,6 +111,9 @@ async def fetch_releases(
         elif key == "NSW_LIVE":
             # NSW live scraper accepts a datetime.
             kwargs.setdefault("from_date", datetime(since.year, since.month, since.day))
+        elif key == "AUSTENDER":
+            # Federal OCDS endpoint uses from_date / to_date date objects.
+            kwargs.setdefault("from_date", since)
         # QLD_TMR, QLD_MULTI, NT, TAS, VIC: use their built-in recency windows.
 
     logger.info("au_procurement.fetch_releases: jurisdiction=%s since=%s", key, since)
