@@ -16,14 +16,26 @@ Scrapes government tender portals, normalises the data to [OCDS v1.1](https://st
 
 ## Jurisdictions
 
-| Jurisdiction | Source | Status | Years |
-|---|---|---|---|
-| Queensland (TMR) | data.qld.gov.au CKAN CSV | Live | 2020-present |
-| NSW (historical) | OCP archive (NSW eTendering) | Live | 2005-02/2025 |
-| NSW (live) | buy.nsw.gov.au | Beta | 2025-present |
-| Commonwealth | AusTender OCDS API | See note | All |
+| Jurisdiction | Source | Status | ABN published | Notes |
+|---|---|---|---|---|
+| Commonwealth | AusTender OCDS API | Use upstream | Yes | Already OCDS - consume `api.tenders.gov.au/ocds` directly |
+| **ACT** | data.act.gov.au (Socrata) | Live | Yes | 2374 contracts on first run |
+| **NSW historical** | OCP archive (NSW eTendering) | Beta | Yes (legacy) | Frozen 2005 - Feb 2025 |
+| **NSW live** | buy.nsw.gov.au | Beta | Partial | 2025-present |
+| **NT** | tendersonline.nt.gov.au | Live | No | Recent + range mode; supplier ABN not published |
+| **QLD TMR** | data.qld.gov.au CKAN CSV | Live | Yes | Transport and Main Roads, 2019-present |
+| **QLD multi-agency** | data.qld.gov.au CKAN CSV | Live | Partial (9%) | 8 agencies inc. Health, Treasury, QBCC |
+| **TAS** | tenders.tas.gov.au | Live | No | Sequential ID walk; supplier ABN not published |
+| **VIC** | tenders.vic.gov.au | Live | Yes (64%) | Recently-awarded; requires Chrome TLS impersonation |
+| SA | contracts.sa.gov.au | Deferred | n/a | Search form requires JavaScript - needs browser driver |
+| QLD QTenders | qtenders.hpw.qld.gov.au | Deferred | n/a | Blazor WebAssembly SPA - needs browser driver |
+| WA | tenders.wa.gov.au | Documented gap | n/a | See [LEGAL.md](LEGAL.md) for the robots.txt policy |
+
+> **ABN-published column** is observed coverage on a recent sample, not a statement about each jurisdiction's legal obligations. Several states legally require ABN disclosure but agencies do not consistently populate the field. The procurement transparency story is largely about this gap.
 
 > **AusTender note:** The Commonwealth already publishes OCDS at `api.tenders.gov.au/ocds`. Consume that directly rather than re-scraping it.
+
+> **Deferred jurisdictions** (SA, QLD QTenders) are not blocked by us - they simply need a browser runtime (Playwright) to render the search interface. That driver is on the roadmap; the parsers and OCDS mapping are in place. PRs welcome.
 
 ## Installation
 

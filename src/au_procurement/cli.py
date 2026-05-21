@@ -149,6 +149,22 @@ def qld_ckan(
 
 
 @app.command()
+def vic(
+    preset: Annotated[str, typer.Option("--preset")] = "recentlyAwarded",
+    max_pages: Annotated[int, typer.Option("--max-pages")] = 20,
+    output: Annotated[Optional[Path], typer.Option("--output", "-o")] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Scrape Victoria recently-awarded contracts (tenders.vic.gov.au)."""
+    _setup_logging(verbose)
+    from au_procurement.scrapers.vic.scraper import scrape
+
+    package = asyncio.run(scrape(preset=preset, max_pages=max_pages))
+    console.print(f"[cyan]VIC:[/cyan] {len(package.releases)} releases")
+    _write_output(package, output)
+
+
+@app.command()
 def nt(
     mode: Annotated[str, typer.Option("--mode", help="recent | range")] = "recent",
     start_id: Annotated[Optional[int], typer.Option("--start-id")] = None,
