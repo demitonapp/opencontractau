@@ -28,6 +28,9 @@ app = typer.Typer(
 nsw_app = typer.Typer(help="NSW contract award data.")
 app.add_typer(nsw_app, name="nsw")
 
+qld_app = typer.Typer(help="Queensland contract award data.")
+app.add_typer(qld_app, name="qld")
+
 console = Console()
 
 
@@ -61,7 +64,32 @@ def _write_output(package, output: Path | None) -> None:
 
 
 @app.command()
-def qld(
+def act(
+    where: Annotated[
+        Optional[str],
+        typer.Option("--where", help="SoQL WHERE clause, e.g. \"execution_date > '2024-01-01'\""),
+    ] = None,
+    max_records: Annotated[
+        Optional[int],
+        typer.Option("--max-records", help="Cap on total records (default: all)"),
+    ] = None,
+    output: Annotated[
+        Optional[Path],
+        typer.Option("--output", "-o", help="Output path (default: stdout)"),
+    ] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Scrape the ACT Contracts Register from data.act.gov.au (Socrata)."""
+    _setup_logging(verbose)
+    from au_procurement.scrapers.act.scraper import scrape
+
+    package = asyncio.run(scrape(where=where, max_records=max_records))
+    console.print(f"[cyan]ACT:[/cyan] {len(package.releases)} releases")
+    _write_output(package, output)
+
+
+@qld_app.command("tmr")
+def qld_tmr(
     year: Annotated[
         Optional[list[str]],
         typer.Option("--year", "-y", help="Financial year(s) to fetch, e.g. 2024-2025"),
@@ -81,7 +109,42 @@ def qld(
     from au_procurement.scrapers.qld.tmr import scrape
 
     package = asyncio.run(scrape(years=list(year) if year else None, all_years=all_years))
-    console.print(f"[cyan]QLD:[/cyan] {len(package.releases)} releases")
+    console.print(f"[cyan]QLD TMR:[/cyan] {len(package.releases)} releases")
+    _write_output(package, output)
+
+
+@qld_app.command("ckan")
+def qld_ckan(
+    only_agency: Annotated[
+        Optional[list[str]],
+        typer.Option("--only", help="Restrict to specific agency code(s) e.g. qfd, treasury"),
+    ] = None,
+    skip_agency: Annotated[
+        Optional[list[str]],
+        typer.Option("--skip", help="Skip specific agency code(s)"),
+    ] = None,
+    most_recent_only: Annotated[
+        bool,
+        typer.Option("--most-recent-only", help="Per agency, only fetch the most recent FY"),
+    ] = False,
+    output: Annotated[
+        Optional[Path],
+        typer.Option("--output", "-o", help="Output path (default: stdout)"),
+    ] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Harvest QLD multi-agency contract disclosure data from data.qld.gov.au."""
+    _setup_logging(verbose)
+    from au_procurement.scrapers.qld.ckan import scrape
+
+    package = asyncio.run(
+        scrape(
+            only_agencies=list(only_agency) if only_agency else None,
+            skip_agencies=list(skip_agency) if skip_agency else None,
+            most_recent_only=most_recent_only,
+        )
+    )
+    console.print(f"[cyan]QLD CKAN:[/cyan] {len(package.releases)} releases")
     _write_output(package, output)
 
 
