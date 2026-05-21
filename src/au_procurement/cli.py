@@ -148,6 +148,46 @@ def qld_ckan(
     _write_output(package, output)
 
 
+@app.command()
+def tas(
+    mode: Annotated[
+        str,
+        typer.Option("--mode", help="recent | range | backfill"),
+    ] = "recent",
+    start_id: Annotated[
+        Optional[int],
+        typer.Option("--start-id", help="First contract ID (range/backfill)"),
+    ] = None,
+    end_id: Annotated[
+        Optional[int],
+        typer.Option("--end-id", help="Last contract ID (range/backfill)"),
+    ] = None,
+    checkpoint: Annotated[
+        Optional[Path],
+        typer.Option("--checkpoint", help="Resume support: append-only file of completed IDs"),
+    ] = None,
+    output: Annotated[
+        Optional[Path],
+        typer.Option("--output", "-o", help="Output path (default: stdout)"),
+    ] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Scrape Tasmania eTenders contract award details (tenders.tas.gov.au)."""
+    _setup_logging(verbose)
+    from au_procurement.scrapers.tas.scraper import scrape
+
+    package = asyncio.run(
+        scrape(
+            mode=mode,
+            start_id=start_id,
+            end_id=end_id,
+            checkpoint_file=checkpoint,
+        )
+    )
+    console.print(f"[cyan]TAS:[/cyan] {len(package.releases)} releases")
+    _write_output(package, output)
+
+
 @nsw_app.command("historical")
 def nsw_historical(
     local_path: Annotated[
