@@ -149,6 +149,36 @@ def qld_ckan(
 
 
 @app.command()
+def nt(
+    mode: Annotated[str, typer.Option("--mode", help="recent | range")] = "recent",
+    start_id: Annotated[Optional[int], typer.Option("--start-id")] = None,
+    end_id: Annotated[Optional[int], typer.Option("--end-id")] = None,
+    max_list_pages: Annotated[
+        int,
+        typer.Option("--max-list-pages", help="Cap pages in recent mode"),
+    ] = 20,
+    checkpoint: Annotated[Optional[Path], typer.Option("--checkpoint")] = None,
+    output: Annotated[Optional[Path], typer.Option("--output", "-o")] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Scrape NT QTOL awarded tenders (tendersonline.nt.gov.au)."""
+    _setup_logging(verbose)
+    from au_procurement.scrapers.nt.scraper import scrape
+
+    package = asyncio.run(
+        scrape(
+            mode=mode,
+            start_id=start_id,
+            end_id=end_id,
+            max_list_pages=max_list_pages,
+            checkpoint_file=checkpoint,
+        )
+    )
+    console.print(f"[cyan]NT:[/cyan] {len(package.releases)} releases")
+    _write_output(package, output)
+
+
+@app.command()
 def tas(
     mode: Annotated[
         str,
