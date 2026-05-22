@@ -1,6 +1,6 @@
 """au-procurement: OC4IDS-compliant scraper for Australian government procurement data."""
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 from au_procurement.api import fetch_releases, list_jurisdictions
 

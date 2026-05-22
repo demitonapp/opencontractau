@@ -73,6 +73,7 @@ async def scrape(
         base_url=BASE_URL,
         min_interval_s=min_interval_s,
         user_agent=OPENCONTRACTSAU_UA,
+        check_robots=False,  # data.act.gov.au is a public open-data API, not a website
     ) as client:
         while True:
             page_size = SOCRATA_PAGE_SIZE

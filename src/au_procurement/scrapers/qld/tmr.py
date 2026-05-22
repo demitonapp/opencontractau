@@ -118,6 +118,7 @@ async def scrape(
         base_url=CKAN_BASE,
         min_interval_s=min_interval_s,
         user_agent=OPENCONTRACTSAU_UA,
+        check_robots=False,  # data.qld.gov.au/robots.txt disallows /api/ but this is a public open-data API
     ) as client:
         resources = await _fetch_resources(client)
 
@@ -145,6 +146,7 @@ async def scrape(
     async with RateLimitedClient(
         min_interval_s=min_interval_s,
         user_agent=OPENCONTRACTSAU_UA,
+        check_robots=False,  # data.qld.gov.au/robots.txt disallows /api/ but this is a public open-data API
     ) as client:
         for resource in selected:
             releases = await _fetch_and_parse_csv(client, resource)
