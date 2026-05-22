@@ -180,6 +180,7 @@ def _raw_to_release(raw: dict[str, Any]) -> Release | None:
     # ---- awards and contracts ----
     awards: list[Award] = []
     contracts: list[Contract] = []
+    classification: dict[str, Any] = {}
 
     for raw_award in raw.get("awards") or []:
         award_id = (raw_award.get("id") or "").strip()
