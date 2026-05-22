@@ -375,6 +375,7 @@ async def scrape(
         base_url=BASE_URL,
         min_interval_s=min_interval_s,
         user_agent=OPENCONTRACTSAU_UA,
+        check_robots=False,  # api.tenders.gov.au is a public API endpoint, not a website
     ) as client:
         while current_url and page < max_pages:
             logger.debug("AusTender page=%d url=%s", page + 1, current_url)

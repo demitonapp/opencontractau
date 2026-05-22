@@ -1,6 +1,6 @@
 [project]
 name = "au-procurement"
-version = "0.2.0"
+version = "0.2.1"
 description = "OC4IDS-compliant scraper for Australian government procurement data"
 authors = [
     { name = "Justin Trollip", email = "justin@demiton.io" },
