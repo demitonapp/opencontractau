@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from au_procurement.transformers.qld_generic import (
+from opencontractau.transformers.qld_generic import (
     _normalise_header,
     build_column_map,
     row_to_release,

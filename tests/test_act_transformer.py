@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from au_procurement.transformers.act import (
+from opencontractau.transformers.act import (
     _clean_abn,
     _normalise_method,
     _parse_amount,

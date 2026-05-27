@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 
-from au_procurement.transformers.qld import (
+from opencontractau.transformers.qld import (
     _clean_abn,
     _make_ocid,
     _normalize_procurement_method,
