@@ -104,7 +104,7 @@ async def scrape(
         checkpoint_file: resume support for long backfills; append-only
             file of completed IDs.
         min_interval_s: seconds between requests. Defaults to 3 per
-            the OpenContractsAU contributing guide.
+            the OpenContractAU contributing guide.
     """
     min_interval_s = max(min_interval_s, 3.0)
 

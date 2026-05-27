@@ -10,7 +10,7 @@ Status: The feed was discontinued in February 2025 when NSW migrated from
 
 The archived data is already in OCDS v1.1 release-package format. This
 importer fetches the bulk download, validates structure, and re-packages
-with OpenContractsAU publisher metadata.
+with OpenContractAU publisher metadata.
 """
 
 from __future__ import annotations
