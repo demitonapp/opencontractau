@@ -1,5 +1,5 @@
 [project]
-name = "au-procurement"
+name = "opencontractau"
 version = "0.3.0"
 description = "OC4IDS-compliant scraper for Australian government procurement data"
 authors = [
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-au-procurement = "au_procurement.cli:app"
+opencontractau = "opencontractau.cli:app"
 
 [project.optional-dependencies]
 dev = [
@@ -34,7 +34,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/au_procurement"]
+packages = ["src/opencontractau"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

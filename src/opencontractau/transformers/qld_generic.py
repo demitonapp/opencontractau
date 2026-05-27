@@ -19,7 +19,7 @@ import logging
 import re
 from datetime import datetime
 
-from au_procurement.models.ocds import (
+from opencontractau.models.ocds import (
     Address,
     Award,
     Contract,
@@ -30,7 +30,7 @@ from au_procurement.models.ocds import (
     Tender,
     Value,
 )
-from au_procurement.transformers.qld import (
+from opencontractau.transformers.qld import (
     _clean_abn,
     _normalize_procurement_method,
     _parse_au_date,

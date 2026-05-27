@@ -81,7 +81,7 @@ def act(
 ) -> None:
     """Scrape the ACT Contracts Register from data.act.gov.au (Socrata)."""
     _setup_logging(verbose)
-    from au_procurement.scrapers.act.scraper import scrape
+    from opencontractau.scrapers.act.scraper import scrape
 
     package = asyncio.run(scrape(where=where, max_records=max_records))
     console.print(f"[cyan]ACT:[/cyan] {len(package.releases)} releases")
@@ -106,7 +106,7 @@ def qld_tmr(
 ) -> None:
     """Scrape Queensland TMR contract disclosures from data.qld.gov.au."""
     _setup_logging(verbose)
-    from au_procurement.scrapers.qld.tmr import scrape
+    from opencontractau.scrapers.qld.tmr import scrape
 
     package = asyncio.run(scrape(years=list(year) if year else None, all_years=all_years))
     console.print(f"[cyan]QLD TMR:[/cyan] {len(package.releases)} releases")
@@ -135,7 +135,7 @@ def qld_ckan(
 ) -> None:
     """Harvest QLD multi-agency contract disclosure data from data.qld.gov.au."""
     _setup_logging(verbose)
-    from au_procurement.scrapers.qld.ckan import scrape
+    from opencontractau.scrapers.qld.ckan import scrape
 
     package = asyncio.run(
         scrape(
@@ -157,7 +157,7 @@ def vic(
 ) -> None:
     """Scrape Victoria recently-awarded contracts (tenders.vic.gov.au)."""
     _setup_logging(verbose)
-    from au_procurement.scrapers.vic.scraper import scrape
+    from opencontractau.scrapers.vic.scraper import scrape
 
     package = asyncio.run(scrape(preset=preset, max_pages=max_pages))
     console.print(f"[cyan]VIC:[/cyan] {len(package.releases)} releases")
@@ -179,7 +179,7 @@ def nt(
 ) -> None:
     """Scrape NT QTOL awarded tenders (tendersonline.nt.gov.au)."""
     _setup_logging(verbose)
-    from au_procurement.scrapers.nt.scraper import scrape
+    from opencontractau.scrapers.nt.scraper import scrape
 
     package = asyncio.run(
         scrape(
@@ -220,7 +220,7 @@ def tas(
 ) -> None:
     """Scrape Tasmania eTenders contract award details (tenders.tas.gov.au)."""
     _setup_logging(verbose)
-    from au_procurement.scrapers.tas.scraper import scrape
+    from opencontractau.scrapers.tas.scraper import scrape
 
     package = asyncio.run(
         scrape(
@@ -258,7 +258,7 @@ def nsw_historical(
     https://data.open-contracting.org/en/publication/11
     """
     _setup_logging(verbose)
-    from au_procurement.scrapers.nsw.historical import scrape
+    from opencontractau.scrapers.nsw.historical import scrape
 
     try:
         package = asyncio.run(scrape(local_path=local_path))
@@ -295,8 +295,8 @@ def nsw_live(
     CONTRIBUTING.md for details.
     """
     _setup_logging(verbose)
-    from au_procurement.scrapers.nsw.live import scrape
-    from au_procurement.transformers.qld import _parse_au_date
+    from opencontractau.scrapers.nsw.live import scrape
+    from opencontractau.transformers.qld import _parse_au_date
 
     def _parse_date(s: str | None) -> datetime | None:
         if not s:

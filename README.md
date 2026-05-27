@@ -1,4 +1,4 @@
-# au-procurement
+# opencontractau
 
 **OC4IDS-compliant scraper for Australian government procurement data.**
 
@@ -42,34 +42,34 @@ Scrapes government tender portals, normalises the data to [OCDS v1.1](https://st
 Requires Python 3.11+.
 
 ```bash
-pip install au-procurement
+pip install opencontractau
 # or with uv:
-uv pip install au-procurement
+uv pip install opencontractau
 ```
 
 ## Usage
 
 ```bash
 # Queensland - most recent financial year
-au-procurement qld --output output/qld.json
+opencontractau qld --output output/qld.json
 
 # Queensland - specific year
-au-procurement qld --year 2024-2025 --output output/qld-2024-25.json
+opencontractau qld --year 2024-2025 --output output/qld-2024-25.json
 
 # Queensland - all available years
-au-procurement qld --all --output output/qld-all.json
+opencontractau qld --all --output output/qld-all.json
 
 # NSW historical archive (2005-Feb 2025)
 # Download the archive from https://data.open-contracting.org/en/publication/11
 # then run:
-au-procurement nsw historical --local-path /path/to/archive.zip --output output/nsw-historical.json
+opencontractau nsw historical --local-path /path/to/archive.zip --output output/nsw-historical.json
 
 # NSW live (buy.nsw.gov.au)
-au-procurement nsw live --output output/nsw-live.json
-au-procurement nsw live --from 2025-01-01 --to 2025-06-30 --output output/nsw-live-h1.json
+opencontractau nsw live --output output/nsw-live.json
+opencontractau nsw live --from 2025-01-01 --to 2025-06-30 --output output/nsw-live-h1.json
 
 # All output goes to stdout by default (pipe-friendly)
-au-procurement qld | jq '.releases[] | .awards[].value.amount'
+opencontractau qld | jq '.releases[] | .awards[].value.amount'
 ```
 
 ## Output format
@@ -132,8 +132,8 @@ cd opencontractau
 pip install -e .       # or: uv pip install -e .
 
 # CLI - write OCDS JSON to a file
-au-procurement qld --output output/qld.json
-au-procurement qld --all --output output/qld-all.json
+opencontractau qld --output output/qld.json
+opencontractau qld --all --output output/qld-all.json
 
 # Python API - use in your own code
 import asyncio
@@ -167,7 +167,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). NSW and Queensland are the first jurisdi
 ## Relation to Demiton
 
 [Demiton](https://demiton.io) is the primary operational consumer of this library. It vendors
-au-procurement as a Python dependency and indexes the OCDS output into its market intelligence
+opencontractau as a Python dependency and indexes the OCDS output into its market intelligence
 corpus. When this library supports a jurisdiction, Demiton removes its own state-specific scraping
 code and consumes the community data through the same `fetch_releases()` API that anyone else can use.
 

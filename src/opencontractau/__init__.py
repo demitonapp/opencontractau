@@ -2,6 +2,6 @@
 
 __version__ = "0.3.0"
 
-from au_procurement.api import fetch_releases, list_jurisdictions
+from opencontractau.api import fetch_releases, list_jurisdictions
 
 __all__ = ["fetch_releases", "list_jurisdictions", "__version__"]

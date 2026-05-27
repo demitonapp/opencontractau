@@ -14,7 +14,7 @@ import re
 from datetime import datetime
 from decimal import Decimal
 
-from au_procurement.models.ocds import (
+from opencontractau.models.ocds import (
     Address,
     Award,
     Contract,
@@ -25,7 +25,7 @@ from au_procurement.models.ocds import (
     Tender,
     Value,
 )
-from au_procurement.scrapers._tendersearch.parser import DetailFields, Supplier
+from opencontractau.scrapers._tendersearch.parser import DetailFields, Supplier
 
 logger = logging.getLogger(__name__)
 

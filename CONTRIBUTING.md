@@ -1,4 +1,4 @@
-# Contributing to au-procurement
+# Contributing to opencontractau
 
 Contributors are welcome. The goal is one well-maintained scraper per Australian jurisdiction, producing OCDS v1.1 release packages from publicly-disclosed contract award data.
 

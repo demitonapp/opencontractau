@@ -23,9 +23,9 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from au_procurement.models.ocds import Publisher, Release, ReleasePackage
-from au_procurement.scrapers.base import OPENCONTRACTSAU_UA, RateLimitedClient
-from au_procurement.transformers.qld_generic import build_column_map, row_to_release
+from opencontractau.models.ocds import Publisher, Release, ReleasePackage
+from opencontractau.scrapers.base import OPENCONTRACTAU_UA, RateLimitedClient
+from opencontractau.transformers.qld_generic import build_column_map, row_to_release
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +236,7 @@ async def scrape(
     async with RateLimitedClient(
         base_url=CKAN_BASE,
         min_interval_s=min_interval_s,
-        user_agent=OPENCONTRACTSAU_UA,
+        user_agent=OPENCONTRACTAU_UA,
         check_robots=False,  # data.qld.gov.au/robots.txt disallows /api/ but this is a public open-data API
     ) as client:
         for agency in selected:

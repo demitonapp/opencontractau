@@ -22,9 +22,9 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from au_procurement.models.ocds import Publisher, Release, ReleasePackage
-from au_procurement.scrapers.base import BROWSER_UA, RateLimitedClient
-from au_procurement.transformers.nt import is_not_found, parse_detail_html
+from opencontractau.models.ocds import Publisher, Release, ReleasePackage
+from opencontractau.scrapers.base import BROWSER_UA, RateLimitedClient
+from opencontractau.transformers.nt import is_not_found, parse_detail_html
 
 logger = logging.getLogger(__name__)
 

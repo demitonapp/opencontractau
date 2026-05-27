@@ -41,7 +41,7 @@ from urllib.parse import quote, urlparse
 
 import httpx
 
-from au_procurement.models.ocds import (
+from opencontractau.models.ocds import (
     Award,
     Contract,
     Identifier,
@@ -53,7 +53,7 @@ from au_procurement.models.ocds import (
     Tender,
     Value,
 )
-from au_procurement.scrapers.base import OPENCONTRACTSAU_UA, RateLimitedClient
+from opencontractau.scrapers.base import OPENCONTRACTAU_UA, RateLimitedClient
 
 logger = logging.getLogger(__name__)
 
@@ -374,7 +374,7 @@ async def scrape(
     async with RateLimitedClient(
         base_url=BASE_URL,
         min_interval_s=min_interval_s,
-        user_agent=OPENCONTRACTSAU_UA,
+        user_agent=OPENCONTRACTAU_UA,
         check_robots=False,  # api.tenders.gov.au is a public API endpoint, not a website
     ) as client:
         while current_url and page < max_pages:

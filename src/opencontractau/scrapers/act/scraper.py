@@ -18,9 +18,9 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from au_procurement.models.ocds import Publisher, Release, ReleasePackage
-from au_procurement.scrapers.base import OPENCONTRACTSAU_UA, RateLimitedClient
-from au_procurement.transformers.act import record_to_release
+from opencontractau.models.ocds import Publisher, Release, ReleasePackage
+from opencontractau.scrapers.base import OPENCONTRACTAU_UA, RateLimitedClient
+from opencontractau.transformers.act import record_to_release
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ async def scrape(
     async with RateLimitedClient(
         base_url=BASE_URL,
         min_interval_s=min_interval_s,
-        user_agent=OPENCONTRACTSAU_UA,
+        user_agent=OPENCONTRACTAU_UA,
         check_robots=False,  # data.act.gov.au is a public open-data API, not a website
     ) as client:
         while True:

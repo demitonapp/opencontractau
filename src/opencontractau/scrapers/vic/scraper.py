@@ -22,13 +22,13 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from au_procurement.models.ocds import Publisher, Release, ReleasePackage
-from au_procurement.scrapers._tendersearch.client import TenderSearchClient
-from au_procurement.scrapers._tendersearch.parser import (
+from opencontractau.models.ocds import Publisher, Release, ReleasePackage
+from opencontractau.scrapers._tendersearch.client import TenderSearchClient
+from opencontractau.scrapers._tendersearch.parser import (
     parse_contract_ids,
     parse_detail_html,
 )
-from au_procurement.scrapers._tendersearch.transformer import detail_to_release
+from opencontractau.scrapers._tendersearch.transformer import detail_to_release
 
 logger = logging.getLogger(__name__)
 

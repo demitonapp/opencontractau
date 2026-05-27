@@ -22,8 +22,8 @@ from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 
-from au_procurement.models.ocds import Publisher, Release, ReleasePackage
-from au_procurement.scrapers.base import OPENCONTRACTSAU_UA, RateLimitedClient
+from opencontractau.models.ocds import Publisher, Release, ReleasePackage
+from opencontractau.scrapers.base import OPENCONTRACTAU_UA, RateLimitedClient
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ async def scrape(
         logger.info("Attempting auto-discovery of NSW OCP archive...")
         async with RateLimitedClient(
             min_interval_s=min_interval_s,
-            user_agent=OPENCONTRACTSAU_UA,
+            user_agent=OPENCONTRACTAU_UA,
         ) as client:
             bulk_url = await _discover_bulk_download_url(client)
             if not bulk_url:

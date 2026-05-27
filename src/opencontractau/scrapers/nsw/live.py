@@ -19,7 +19,7 @@ import re
 from datetime import datetime
 from html.parser import HTMLParser
 
-from au_procurement.models.ocds import (
+from opencontractau.models.ocds import (
     Address,
     Award,
     Contract,
@@ -32,8 +32,8 @@ from au_procurement.models.ocds import (
     Value,
     Publisher,
 )
-from au_procurement.scrapers.base import BROWSER_UA, RateLimitedClient
-from au_procurement.transformers.qld import _clean_abn, _parse_au_date, _parse_value
+from opencontractau.scrapers.base import BROWSER_UA, RateLimitedClient
+from opencontractau.transformers.qld import _clean_abn, _parse_au_date, _parse_value
 
 logger = logging.getLogger(__name__)
 

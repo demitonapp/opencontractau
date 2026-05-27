@@ -22,7 +22,7 @@ import logging
 from datetime import date, datetime
 from typing import Any
 
-from au_procurement.models.ocds import ReleasePackage
+from opencontractau.models.ocds import ReleasePackage
 
 logger = logging.getLogger(__name__)
 
