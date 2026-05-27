@@ -1,8 +1,8 @@
 """
 Rate-limited HTTP client with robots.txt compliance.
 
-Per the OpenContractsAU contributing guide:
-- Identifies as OpenContractsAU/0.x with a link to the project
+Per the OpenContractAU contributing guide:
+- Identifies as OpenContractAU/0.x with a link to the project
 - Rate-limits to one request per three seconds (configurable)
 - Respects robots.txt for the target host
 - Honours takedown requests (see CONTRIBUTING.md)
@@ -21,14 +21,14 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-OPENCONTRACTSAU_UA = (
-    "OpenContractsAU/0.1 (+https://github.com/demitonapp/au-procurement)"
+OPENCONTRACTAU_UA = (
+    "OpenContractAU/0.1 (+https://github.com/demitonapp/opencontractau)"
 )
 
 BROWSER_UA = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 "
-    "OpenContractsAU/0.1 (+https://github.com/demitonapp/au-procurement)"
+    "OpenContractAU/0.1 (+https://github.com/demitonapp/opencontractau)"
 )
 
 
@@ -73,7 +73,7 @@ class RateLimitedClient:
         self,
         base_url: str = "",
         min_interval_s: float = 3.0,
-        user_agent: str = OPENCONTRACTSAU_UA,
+        user_agent: str = OPENCONTRACTAU_UA,
         extra_headers: dict[str, str] | None = None,
         timeout_s: float = 60.0,
         check_robots: bool = True,

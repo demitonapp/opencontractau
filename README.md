@@ -6,7 +6,7 @@ Every Australian state legally requires contract awards to be disclosed. Not one
 
 Free to use. No API key. No login.
 
-Repo: [github.com/demitonapp/au-procurement](https://github.com/demitonapp/au-procurement)
+Repo: [github.com/demitonapp/opencontractau](https://github.com/demitonapp/opencontractau)
 
 ---
 
@@ -81,8 +81,8 @@ Each command produces an [OCDS Release Package](https://standard.open-contractin
   "version": "1.1",
   "publishedDate": "2026-05-21T00:00:00",
   "publisher": {
-    "name": "OpenContractsAU",
-    "uid": "https://github.com/demitonapp/au-procurement"
+    "name": "OpenContractAU",
+    "uid": "https://github.com/demitonapp/opencontractau"
   },
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "releases": [
@@ -111,7 +111,7 @@ Yes. See the full legal analysis in the blog post that launched this project: [A
 Short version: scraping publicly-disclosed, legally-mandated business data is not personal information under the Privacy Act (it concerns businesses and ABNs, not individuals). The portals are not restricted data under the Criminal Code because they are public and unauthenticated. Copyright does not protect facts under Australian law ([IceTV v Nine Network [2009] HCA 14](https://www.austlii.edu.au/cgi-bin/viewdoc/au/cases/cth/HCA/2009/14.html)).
 
 This project:
-- Identifies itself with a descriptive User-Agent (`OpenContractsAU/0.x`)
+- Identifies itself with a descriptive User-Agent (`OpenContractAU/0.x`)
 - Respects `robots.txt` for every target host
 - Rate-limits to one request per three seconds on live scrapers
 - Honours takedown requests (open a GitHub issue)
@@ -127,8 +127,8 @@ The Public tier exposes the full indexed corpus via the REST API and MCP.
 To run the scrapers yourself:
 
 ```bash
-git clone https://github.com/demitonapp/au-procurement
-cd au-procurement
+git clone https://github.com/demitonapp/opencontractau
+cd opencontractau
 pip install -e .       # or: uv pip install -e .
 
 # CLI - write OCDS JSON to a file
