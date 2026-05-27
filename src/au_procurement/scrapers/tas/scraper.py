@@ -156,7 +156,7 @@ async def scrape(
 
     logger.info("Produced %d TAS releases", len(releases))
     return ReleasePackage(
-        uri="https://github.com/demitonapp/au-procurement/releases/tas",
+        uri="https://github.com/demitonapp/opencontractau/releases/tas",
         publishedDate=datetime.utcnow(),
         publisher=Publisher(),
         releases=releases,

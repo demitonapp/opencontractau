@@ -251,7 +251,7 @@ async def scrape(
 
     logger.info("Produced %d NSW live releases", len(releases))
     return ReleasePackage(
-        uri="https://github.com/demitonapp/au-procurement/releases/nsw/live",
+        uri="https://github.com/demitonapp/opencontractau/releases/nsw/live",
         publishedDate=datetime.utcnow(),
         publisher=Publisher(),
         releases=releases,

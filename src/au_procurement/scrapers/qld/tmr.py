@@ -155,7 +155,7 @@ async def scrape(
                 await asyncio.sleep(min_interval_s)
 
     return ReleasePackage(
-        uri=f"https://github.com/demitonapp/au-procurement/releases/qld/tmr",
+        uri=f"https://github.com/demitonapp/opencontractau/releases/qld/tmr",
         publishedDate=datetime.utcnow(),
         publisher=Publisher(),
         releases=all_releases,

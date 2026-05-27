@@ -148,7 +148,7 @@ async def scrape(
 
     logger.info("Produced %d NT releases", len(releases))
     return ReleasePackage(
-        uri="https://github.com/demitonapp/au-procurement/releases/nt",
+        uri="https://github.com/demitonapp/opencontractau/releases/nt",
         publishedDate=datetime.utcnow(),
         publisher=Publisher(),
         releases=releases,

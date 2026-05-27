@@ -105,7 +105,7 @@ async def scrape(
             releases.append(release)
 
     return ReleasePackage(
-        uri="https://github.com/demitonapp/au-procurement/releases/act",
+        uri="https://github.com/demitonapp/opencontractau/releases/act",
         publishedDate=datetime.utcnow(),
         publisher=Publisher(),
         releases=releases,

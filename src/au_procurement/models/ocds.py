@@ -115,8 +115,8 @@ class Release(BaseModel):
 class Publisher(BaseModel):
     name: str = "OpenContractsAU"
     scheme: str = "GitHub"
-    uid: str = "https://github.com/demitonapp/au-procurement"
-    uri: str = "https://github.com/demitonapp/au-procurement"
+    uid: str = "https://github.com/demitonapp/opencontractau"
+    uri: str = "https://github.com/demitonapp/opencontractau"
 
 
 class ReleasePackage(BaseModel):

@@ -417,7 +417,7 @@ async def scrape(
     logger.info("AusTender: %d releases ready", len(releases))
 
     return ReleasePackage(
-        uri="https://github.com/demitonapp/au-procurement/releases/federal/austender",
+        uri="https://github.com/demitonapp/opencontractau/releases/federal/austender",
         publishedDate=datetime.utcnow(),
         publisher=Publisher(),
         releases=releases,
