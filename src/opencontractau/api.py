@@ -43,6 +43,13 @@ _JURISDICTION_SCRAPERS: dict[str, str] = {
     "VIC":            "au_procurement.scrapers.vic.scraper",
     # Federal
     "AUSTENDER":      "au_procurement.scrapers.federal.scraper",
+    # QLD Local Government (SEQ councils - awarded contract registers)
+    "BCC":             "opencontractau.scrapers.qld.councils.bcc",
+    "GC_COUNCIL":      "opencontractau.scrapers.qld.councils.gold_coast",
+    "LOGAN_COUNCIL":   "opencontractau.scrapers.qld.councils.logan",
+    "MORETON_BAY":     "opencontractau.scrapers.qld.councils.moreton_bay",
+    "IPSWICH_COUNCIL": "opencontractau.scrapers.qld.councils.ipswich",
+    "SCENIC_RIM":      "opencontractau.scrapers.qld.councils.scenic_rim",
 }
 
 
