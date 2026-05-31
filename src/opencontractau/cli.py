@@ -165,6 +165,21 @@ def vic(
 
 
 @app.command()
+def sa(
+    max_pages: Annotated[int, typer.Option("--max-pages")] = 20,
+    output: Annotated[Optional[Path], typer.Option("--output", "-o")] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
+) -> None:
+    """Scrape South Australia recently-awarded contracts (contracts.sa.gov.au) using Playwright."""
+    _setup_logging(verbose)
+    from opencontractau.scrapers.sa.scraper import scrape
+
+    package = asyncio.run(scrape(max_pages=max_pages))
+    console.print(f"[cyan]SA:[/cyan] {len(package.releases)} releases")
+    _write_output(package, output)
+
+
+@app.command()
 def nt(
     mode: Annotated[str, typer.Option("--mode", help="recent | range")] = "recent",
     start_id: Annotated[Optional[int], typer.Option("--start-id")] = None,
