@@ -41,6 +41,7 @@ class AgencyConfig:
 
 
 AGENCIES: list[AgencyConfig] = [
+    # -- Original 11 agencies --
     AgencyConfig(
         package_id="contract-disclosure-qfd",
         agency_code="qfd",
@@ -95,6 +96,70 @@ AGENCIES: list[AgencyConfig] = [
         package_id="contract-disclosure-reports",
         agency_code="sport-olympic",
         display_name="Sport, Racing and Olympic and Paralympic Games",
+    ),
+    # -- Additional health and hospital services --
+    AgencyConfig(
+        package_id="schhs-contract-disclosure-fy2023-24",
+        agency_code="schhs",
+        display_name="Sunshine Coast Hospital and Health Service",
+    ),
+    AgencyConfig(
+        package_id="ddhhs-contract-disclosure",
+        agency_code="ddhhs",
+        display_name="Darling Downs Health",
+    ),
+    AgencyConfig(
+        package_id="wbhhs_contracts-disclosure-report",
+        agency_code="wbhhs",
+        display_name="West Moreton Hospital and Health Service",
+    ),
+    AgencyConfig(
+        package_id="contract-disclosure-qld-ambulance-service",
+        agency_code="qas",
+        display_name="Queensland Ambulance Service",
+    ),
+    AgencyConfig(
+        package_id="cqhhs-contract-disclosure-reporting",
+        agency_code="cqhhs",
+        display_name="Central Queensland Hospital and Health Service",
+    ),
+    # -- Families, child safety and community services --
+    AgencyConfig(
+        package_id="dcsyw-contract-disclosure-report",
+        agency_code="dcsyw",
+        display_name="Child Safety, Youth and Women",
+    ),
+    AgencyConfig(
+        package_id="dcssds-contract-disclosure-report",
+        agency_code="dcssds",
+        display_name="Community Services, Disability Services and Seniors",
+    ),
+    AgencyConfig(
+        package_id="dfsdscs-contract-disclosure-report",
+        agency_code="dfsdscs",
+        display_name="Families, Disability Services and Child Safety",
+    ),
+    AgencyConfig(
+        package_id="dcyjma-contract-disclosure-report",
+        agency_code="dcyjma",
+        display_name="Children, Youth Justice and Multicultural Affairs",
+    ),
+    # -- Natural resources and environment --
+    AgencyConfig(
+        package_id="contract-disclosure-report-dnrmmrrd",
+        agency_code="dnrmmrrd",
+        display_name="Natural Resources, Mines, Manufacturing and Regional Development",
+    ),
+    # -- Arts and culture --
+    AgencyConfig(
+        package_id="qagoma-contract-disclosure-report-2022-23",
+        agency_code="qagoma",
+        display_name="Queensland Art Gallery and Gallery of Modern Art",
+    ),
+    AgencyConfig(
+        package_id="arts-queensland-s-contract-disclosure-report",
+        agency_code="arts-qld",
+        display_name="Arts Queensland",
     ),
 ]
 
