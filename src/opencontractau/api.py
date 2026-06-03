@@ -52,6 +52,13 @@ _JURISDICTION_SCRAPERS: dict[str, str] = {
     "MORETON_BAY":     "opencontractau.scrapers.qld.councils.moreton_bay",
     "IPSWICH_COUNCIL": "opencontractau.scrapers.qld.councils.ipswich",
     "SCENIC_RIM":      "opencontractau.scrapers.qld.councils.scenic_rim",
+    # NSW Local Government (awarded contract registers)
+    "SYDNEY_COUNCIL":   "opencontractau.scrapers.nsw.councils.city_of_sydney",
+    "NORTHERN_BEACHES": "opencontractau.scrapers.nsw.councils.northern_beaches",
+    "WOLLONGONG":       "opencontractau.scrapers.nsw.councils.wollongong",
+    "BLACKTOWN":        "opencontractau.scrapers.nsw.councils.blacktown",
+    "CUMBERLAND":       "opencontractau.scrapers.nsw.councils.cumberland",
+    "LIVERPOOL_NSW":    "opencontractau.scrapers.nsw.councils.liverpool",
 }
 
 

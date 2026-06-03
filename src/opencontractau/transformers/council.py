@@ -33,21 +33,37 @@ logger = logging.getLogger(__name__)
 
 # Maps council_key -> OCID prefix
 _OCID_PREFIXES: dict[str, str] = {
-    "BCC":            "ocau-qld-bcc",
-    "GC_COUNCIL":     "ocau-qld-gc",
-    "LOGAN_COUNCIL":  "ocau-qld-logan",
-    "MORETON_BAY":    "ocau-qld-mbrc",
+    # QLD SEQ councils
+    "BCC":             "ocau-qld-bcc",
+    "GC_COUNCIL":      "ocau-qld-gc",
+    "LOGAN_COUNCIL":   "ocau-qld-logan",
+    "MORETON_BAY":     "ocau-qld-mbrc",
     "IPSWICH_COUNCIL": "ocau-qld-icc",
-    "SCENIC_RIM":     "ocau-qld-srrc",
+    "SCENIC_RIM":      "ocau-qld-srrc",
+    # NSW councils
+    "SYDNEY_COUNCIL":   "ocau-nsw-sydney",
+    "NORTHERN_BEACHES": "ocau-nsw-nb",
+    "WOLLONGONG":       "ocau-nsw-wollongong",
+    "BLACKTOWN":        "ocau-nsw-blacktown",
+    "CUMBERLAND":       "ocau-nsw-cumberland",
+    "LIVERPOOL_NSW":    "ocau-nsw-liverpool",
 }
 
 _BUYER_IDS: dict[str, str] = {
+    # QLD SEQ councils
     "BCC":             "au-qld-bcc",
     "GC_COUNCIL":      "au-qld-gold-coast",
     "LOGAN_COUNCIL":   "au-qld-logan",
     "MORETON_BAY":     "au-qld-mbrc",
     "IPSWICH_COUNCIL": "au-qld-icc",
     "SCENIC_RIM":      "au-qld-srrc",
+    # NSW councils
+    "SYDNEY_COUNCIL":   "au-nsw-sydney",
+    "NORTHERN_BEACHES": "au-nsw-northern-beaches",
+    "WOLLONGONG":       "au-nsw-wollongong",
+    "BLACKTOWN":        "au-nsw-blacktown",
+    "CUMBERLAND":       "au-nsw-cumberland",
+    "LIVERPOOL_NSW":    "au-nsw-liverpool",
 }
 
 
@@ -121,7 +137,7 @@ def normalize_method(raw: str | None) -> str | None:
 
 
 def _make_ocid(council_key: str, reference: str | None, title: str, supplier: str) -> str:
-    prefix = _OCID_PREFIXES.get(council_key, f"ocau-qld-{council_key.lower()}")
+    prefix = _OCID_PREFIXES.get(council_key, f"ocau-au-{council_key.lower()}")
     if reference and reference.strip():
         safe = re.sub(r"[^a-zA-Z0-9\-]", "-", reference.strip())
         safe = re.sub(r"-+", "-", safe).strip("-")
@@ -155,7 +171,7 @@ def row_to_release(row: CouncilContractRow, seq: int = 1) -> Release | None:
     release_id = _make_release_id(ocid, row.award_date, seq)
     release_date = row.award_date or datetime.utcnow()
 
-    buyer_id = _BUYER_IDS.get(row.council_key, f"au-qld-{row.council_key.lower()}")
+    buyer_id = _BUYER_IDS.get(row.council_key, f"au-council-{row.council_key.lower()}")
     buyer = Organization(id=buyer_id, name=row.council_name, roles=["buyer"])
 
     # No ABN -- use name-based org ID so the pipeline can resolve later
