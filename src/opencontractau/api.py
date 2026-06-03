@@ -39,8 +39,10 @@ _JURISDICTION_SCRAPERS: dict[str, str] = {
     "NSW_LIVE":       "au_procurement.scrapers.nsw.live",
     "NSW_HISTORICAL": "au_procurement.scrapers.nsw.historical",
     "NT":             "au_procurement.scrapers.nt.scraper",
+    "SA":             "opencontractau.scrapers.sa.scraper",
     "TAS":            "au_procurement.scrapers.tas.scraper",
     "VIC":            "au_procurement.scrapers.vic.scraper",
+    "WA":             "opencontractau.scrapers.wa.scraper",
     # Federal
     "AUSTENDER":      "au_procurement.scrapers.federal.scraper",
     # QLD Local Government (SEQ councils - awarded contract registers)
