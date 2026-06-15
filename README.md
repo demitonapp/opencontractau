@@ -137,7 +137,7 @@ opencontractsau qld --all --output output/qld-all.json
 
 # Python API - use in your own code
 import asyncio
-from au_procurement import fetch_releases
+from opencontractsau import fetch_releases
 
 package = asyncio.run(fetch_releases("ACT"))
 print(f"Fetched {len(package.releases)} releases")

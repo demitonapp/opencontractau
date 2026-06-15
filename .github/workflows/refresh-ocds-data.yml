@@ -1,0 +1,92 @@
+name: Refresh OCDS Data
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'   # Monday 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  STORAGE_ACCOUNT: demitonpublicdata
+  CONTAINER: au-contracts
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - key: act
+            cmd: "opencontractsau act"
+          - key: qld-tmr
+            cmd: "opencontractsau qld tmr"
+          - key: qld-multi
+            cmd: "opencontractsau qld ckan --most-recent-only"
+          - key: nsw
+            cmd: "opencontractsau nsw live"
+          - key: nt
+            cmd: "opencontractsau nt"
+          - key: tas
+            cmd: "opencontractsau tas"
+          - key: vic
+            cmd: "opencontractsau vic"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Fetch ${{ matrix.key }}
+        run: uv run ${{ matrix.cmd }} --output ${{ matrix.key }}.json
+
+      - name: Upload to Azure Blob
+        run: |
+          az storage blob upload \
+            --account-name $STORAGE_ACCOUNT \
+            --container-name $CONTAINER \
+            --name ${{ matrix.key }}.json \
+            --file ${{ matrix.key }}.json \
+            --content-type "application/json" \
+            --content-cache-control "public, max-age=86400" \
+            --overwrite \
+            --auth-mode login
+
+  index:
+    runs-on: ubuntu-latest
+    needs: refresh
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Upload index
+        run: |
+          uv run opencontractsau index --output index.json
+          az storage blob upload \
+            --account-name $STORAGE_ACCOUNT \
+            --container-name $CONTAINER \
+            --name index.json \
+            --file index.json \
+            --content-type "application/json" \
+            --content-cache-control "public, max-age=3600" \
+            --overwrite \
+            --auth-mode login

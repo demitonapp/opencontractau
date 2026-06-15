@@ -6,7 +6,7 @@ consumers that import the library (e.g. Demiton) rather than using the CLI.
 
 Usage::
 
-    from au_procurement import fetch_releases, list_jurisdictions
+    from opencontractsau import fetch_releases, list_jurisdictions
 
     package = await fetch_releases("ACT")
     print(f"{len(package.releases)} releases")
@@ -33,18 +33,18 @@ logger = logging.getLogger(__name__)
 # The module must expose an async ``scrape(**kwargs) -> ReleasePackage``.
 
 _JURISDICTION_SCRAPERS: dict[str, str] = {
-    "ACT":            "au_procurement.scrapers.act.scraper",
-    "QLD_TMR":        "au_procurement.scrapers.qld.tmr",
-    "QLD_MULTI":      "au_procurement.scrapers.qld.ckan",
-    "NSW_LIVE":       "au_procurement.scrapers.nsw.live",
-    "NSW_HISTORICAL": "au_procurement.scrapers.nsw.historical",
-    "NT":             "au_procurement.scrapers.nt.scraper",
+    "ACT":            "opencontractsau.scrapers.act.scraper",
+    "QLD_TMR":        "opencontractsau.scrapers.qld.tmr",
+    "QLD_MULTI":      "opencontractsau.scrapers.qld.ckan",
+    "NSW_LIVE":       "opencontractsau.scrapers.nsw.live",
+    "NSW_HISTORICAL": "opencontractsau.scrapers.nsw.historical",
+    "NT":             "opencontractsau.scrapers.nt.scraper",
     "SA":             "opencontractsau.scrapers.sa.scraper",
-    "TAS":            "au_procurement.scrapers.tas.scraper",
-    "VIC":            "au_procurement.scrapers.vic.scraper",
+    "TAS":            "opencontractsau.scrapers.tas.scraper",
+    "VIC":            "opencontractsau.scrapers.vic.scraper",
     "WA":             "opencontractsau.scrapers.wa.scraper",
     # Federal
-    "AUSTENDER":      "au_procurement.scrapers.federal.scraper",
+    "AUSTENDER":      "opencontractsau.scrapers.federal.scraper",
     # QLD Local Government (SEQ councils - awarded contract registers)
     "BCC":             "opencontractsau.scrapers.qld.councils.bcc",
     "GC_COUNCIL":      "opencontractsau.scrapers.qld.councils.gold_coast",
@@ -135,5 +135,5 @@ async def fetch_releases(
             kwargs.setdefault("from_date", since)
         # QLD_TMR, QLD_MULTI, NT, TAS, VIC: use their built-in recency windows.
 
-    logger.info("au_procurement.fetch_releases: jurisdiction=%s since=%s", key, since)
+    logger.info("opencontractsau.fetch_releases: jurisdiction=%s since=%s", key, since)
     return await scrape_fn(**kwargs)

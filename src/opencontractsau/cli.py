@@ -319,5 +319,43 @@ def nsw_live(
     _write_output(package, output)
 
 
+@app.command()
+def index(
+    output: Annotated[
+        Optional[Path],
+        typer.Option("--output", "-o", help="Output path (default: stdout)"),
+    ] = None,
+) -> None:
+    """
+    Emit a package index JSON listing all jurisdiction endpoints at data.demiton.io.
+
+    Kingfisher and OCP tooling can use this as the root discovery URL.
+    """
+    from opencontractsau.api import list_jurisdictions
+
+    base = "https://data.demiton.io/au-contracts"
+    payload = {
+        "publisher": {
+            "name": "OpenContractsAU",
+            "uri": f"{base}/",
+            "scheme": "GitHub",
+            "uid": "https://github.com/demitonapp/opencontractsau",
+        },
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "packages": [
+            {"jurisdiction": jkey, "uri": f"{base}/{jkey}.json"}
+            for jkey in list_jurisdictions()
+        ],
+    }
+    body = json.dumps(payload, indent=2)
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(body, encoding="utf-8")
+        console.print(f"[green]Wrote index to {output}[/green]")
+    else:
+        sys.stdout.write(body)
+        sys.stdout.write("\n")
+
+
 if __name__ == "__main__":
     app()

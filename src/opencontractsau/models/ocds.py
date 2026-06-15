@@ -116,7 +116,10 @@ class Publisher(BaseModel):
     name: str = "OpenContractsAU"
     scheme: str = "GitHub"
     uid: str = "https://github.com/demitonapp/opencontractsau"
-    uri: str = "https://github.com/demitonapp/opencontractsau"
+    uri: str = "https://data.demiton.io/au-contracts/"
+
+
+_CDN_BASE = "https://data.demiton.io/au-contracts"
 
 
 class ReleasePackage(BaseModel):
@@ -128,3 +131,8 @@ class ReleasePackage(BaseModel):
     license: str = "https://creativecommons.org/licenses/by/4.0/"
 
     model_config = {"populate_by_name": True}
+
+    @classmethod
+    def with_jurisdiction(cls, jurisdiction: str, **kwargs) -> "ReleasePackage":
+        """Construct a package with its CDN uri pre-set for the given jurisdiction key."""
+        return cls(uri=f"{_CDN_BASE}/{jurisdiction}.json", **kwargs)

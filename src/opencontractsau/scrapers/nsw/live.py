@@ -6,7 +6,7 @@ published at https://buy.nsw.gov.au/notices/search?noticeTypes=can.
 
 The platform blocks non-browser user-agents with HTTP 403. This scraper uses
 a browser-style UA and request headers. If 403 persists in production, use
-the Playwright driver (au_procurement.drivers.playwright_nsw) instead.
+the Playwright driver (opencontractsau.drivers.playwright_nsw) instead.
 
 Rate limit: 1 request per 3 seconds per the OpenContractsAU contributing guide.
 """
