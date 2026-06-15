@@ -1,4 +1,4 @@
-# Contributing to opencontractau
+# Contributing to opencontractsau
 
 Contributors are welcome. The goal is one well-maintained scraper per Australian jurisdiction, producing OCDS v1.1 release packages from publicly-disclosed contract award data.
 
@@ -6,7 +6,7 @@ Contributors are welcome. The goal is one well-maintained scraper per Australian
 
 Every scraper in this repo must:
 
-1. **Identify itself** with a User-Agent string in the format `OpenContractAU/0.x (+https://github.com/demitonapp/opencontractau)`.
+1. **Identify itself** with a User-Agent string in the format `OpenContractsAU/0.x (+https://github.com/demitonapp/opencontractsau)`.
 2. **Respect robots.txt** for the target host. Use `au_procurement.scrapers.base.RateLimitedClient`, which checks robots.txt automatically.
 3. **Rate-limit** to one request per three seconds on live scrapers. CKAN/static-file downloads may use a shorter interval (1 second minimum).
 4. **Honour takedown requests.** If a government agency requests removal of data, open an issue immediately and pause that scraper pending resolution.

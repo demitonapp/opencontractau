@@ -1,6 +1,6 @@
 # LEGAL.md
 
-This file documents the legal posture of OpenContractAU and records explicit decisions on jurisdictions where the legal landscape is non-trivial.
+This file documents the legal posture of OpenContractsAU and records explicit decisions on jurisdictions where the legal landscape is non-trivial.
 
 ## Default posture
 
@@ -13,10 +13,10 @@ Every scraper in this repository operates against publicly-disclosed, legally-ma
 
 Every scraper:
 
-- Identifies as `OpenContractAU/0.x (+https://github.com/demitonapp/opencontractau)`.
+- Identifies as `OpenContractsAU/0.x (+https://github.com/demitonapp/opencontractsau)`.
 - Rate-limits to one request per three seconds (live scrapers).
 - Respects `robots.txt` for the target host **except where explicitly documented below**.
-- Honours takedown requests - open a [GitHub issue](https://github.com/demitonapp/opencontractau/issues).
+- Honours takedown requests - open a [GitHub issue](https://github.com/demitonapp/opencontractsau/issues).
 
 ## Jurisdiction-specific notes
 
@@ -44,11 +44,11 @@ If WA changes its `robots.txt`, this scraper will ship within a week.
 
 ### Northern Territory - `tendersonline.nt.gov.au`
 
-The portal returned `ECONNREFUSED` when fetching `/robots.txt` during the initial probe. The scraper assumes "no restrictions" for the disclosure path and operates with `OpenContractAU` UA at 3-second intervals. If a `robots.txt` is added that disallows our path, the scraper will respect it on the next run.
+The portal returned `ECONNREFUSED` when fetching `/robots.txt` during the initial probe. The scraper assumes "no restrictions" for the disclosure path and operates with `OpenContractsAU` UA at 3-second intervals. If a `robots.txt` is added that disallows our path, the scraper will respect it on the next run.
 
 ### Tasmania - `tenders.tas.gov.au`
 
-The portal returned HTTP 500 when fetching `/robots.txt` during the initial probe. Same posture as NT - operates with `OpenContractAU` UA and 3-second rate limiting until a valid `robots.txt` appears.
+The portal returned HTTP 500 when fetching `/robots.txt` during the initial probe. Same posture as NT - operates with `OpenContractsAU` UA and 3-second rate limiting until a valid `robots.txt` appears.
 
 ### Victoria, South Australia, Queensland QTenders
 
@@ -60,6 +60,6 @@ These portals sit behind Cloudflare and use TLS-fingerprint bot detection that r
 
 If you are a government agency or rights-holder with a takedown or scope concern:
 
-1. Open a [GitHub issue](https://github.com/demitonapp/opencontractau/issues) describing the concern.
+1. Open a [GitHub issue](https://github.com/demitonapp/opencontractsau/issues) describing the concern.
 2. The scraper for that jurisdiction will be paused within 48 hours pending resolution.
 3. Substantive engagement is welcome - this project exists because the public-interest case for OCDS-format procurement transparency is strong, but it is not adversarial.

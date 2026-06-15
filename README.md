@@ -1,4 +1,4 @@
-# opencontractau
+# opencontractsau
 
 **OC4IDS-compliant scraper for Australian government procurement data.**
 
@@ -6,7 +6,7 @@ Every Australian state legally requires contract awards to be disclosed. Not one
 
 Free to use. No API key. No login.
 
-Repo: [github.com/demitonapp/opencontractau](https://github.com/demitonapp/opencontractau)
+Repo: [github.com/demitonapp/opencontractsau](https://github.com/demitonapp/opencontractsau)
 
 ---
 
@@ -42,34 +42,34 @@ Scrapes government tender portals, normalises the data to [OCDS v1.1](https://st
 Requires Python 3.11+.
 
 ```bash
-pip install opencontractau
+pip install opencontractsau
 # or with uv:
-uv pip install opencontractau
+uv pip install opencontractsau
 ```
 
 ## Usage
 
 ```bash
 # Queensland - most recent financial year
-opencontractau qld --output output/qld.json
+opencontractsau qld --output output/qld.json
 
 # Queensland - specific year
-opencontractau qld --year 2024-2025 --output output/qld-2024-25.json
+opencontractsau qld --year 2024-2025 --output output/qld-2024-25.json
 
 # Queensland - all available years
-opencontractau qld --all --output output/qld-all.json
+opencontractsau qld --all --output output/qld-all.json
 
 # NSW historical archive (2005-Feb 2025)
 # Download the archive from https://data.open-contracting.org/en/publication/11
 # then run:
-opencontractau nsw historical --local-path /path/to/archive.zip --output output/nsw-historical.json
+opencontractsau nsw historical --local-path /path/to/archive.zip --output output/nsw-historical.json
 
 # NSW live (buy.nsw.gov.au)
-opencontractau nsw live --output output/nsw-live.json
-opencontractau nsw live --from 2025-01-01 --to 2025-06-30 --output output/nsw-live-h1.json
+opencontractsau nsw live --output output/nsw-live.json
+opencontractsau nsw live --from 2025-01-01 --to 2025-06-30 --output output/nsw-live-h1.json
 
 # All output goes to stdout by default (pipe-friendly)
-opencontractau qld | jq '.releases[] | .awards[].value.amount'
+opencontractsau qld | jq '.releases[] | .awards[].value.amount'
 ```
 
 ## Output format
@@ -81,8 +81,8 @@ Each command produces an [OCDS Release Package](https://standard.open-contractin
   "version": "1.1",
   "publishedDate": "2026-05-21T00:00:00",
   "publisher": {
-    "name": "OpenContractAU",
-    "uid": "https://github.com/demitonapp/opencontractau"
+    "name": "OpenContractsAU",
+    "uid": "https://github.com/demitonapp/opencontractsau"
   },
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "releases": [
@@ -111,7 +111,7 @@ Yes. See the full legal analysis in the blog post that launched this project: [A
 Short version: scraping publicly-disclosed, legally-mandated business data is not personal information under the Privacy Act (it concerns businesses and ABNs, not individuals). The portals are not restricted data under the Criminal Code because they are public and unauthenticated. Copyright does not protect facts under Australian law ([IceTV v Nine Network [2009] HCA 14](https://www.austlii.edu.au/cgi-bin/viewdoc/au/cases/cth/HCA/2009/14.html)).
 
 This project:
-- Identifies itself with a descriptive User-Agent (`OpenContractAU/0.x`)
+- Identifies itself with a descriptive User-Agent (`OpenContractsAU/0.x`)
 - Respects `robots.txt` for every target host
 - Rate-limits to one request per three seconds on live scrapers
 - Honours takedown requests (open a GitHub issue)
@@ -127,13 +127,13 @@ The Public tier exposes the full indexed corpus via the REST API and MCP.
 To run the scrapers yourself:
 
 ```bash
-git clone https://github.com/demitonapp/opencontractau
-cd opencontractau
+git clone https://github.com/demitonapp/opencontractsau
+cd opencontractsau
 pip install -e .       # or: uv pip install -e .
 
 # CLI - write OCDS JSON to a file
-opencontractau qld --output output/qld.json
-opencontractau qld --all --output output/qld-all.json
+opencontractsau qld --output output/qld.json
+opencontractsau qld --all --output output/qld-all.json
 
 # Python API - use in your own code
 import asyncio
@@ -167,7 +167,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). NSW and Queensland are the first jurisdi
 ## Relation to Demiton
 
 [Demiton](https://demiton.io) is the primary operational consumer of this library. It vendors
-opencontractau as a Python dependency and indexes the OCDS output into its market intelligence
+opencontractsau as a Python dependency and indexes the OCDS output into its market intelligence
 corpus. When this library supports a jurisdiction, Demiton removes its own state-specific scraping
 code and consumes the community data through the same `fetch_releases()` API that anyone else can use.
 
