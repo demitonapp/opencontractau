@@ -3,11 +3,11 @@
 from decimal import Decimal
 from pathlib import Path
 
-from opencontractsau.scrapers._tendersearch.parser import (
+from opencontractau.scrapers._tendersearch.parser import (
     parse_contract_ids,
     parse_detail_html,
 )
-from opencontractsau.scrapers._tendersearch.transformer import (
+from opencontractau.scrapers._tendersearch.transformer import (
     _clean_abn,
     _normalise_method,
     _parse_date,
@@ -122,7 +122,7 @@ class TestParseDetailHtmlAndTransform:
         assert period.end_date.year == 2027
 
     def test_empty_detail_returns_none(self):
-        from opencontractsau.scrapers._tendersearch.parser import DetailFields
+        from opencontractau.scrapers._tendersearch.parser import DetailFields
         empty = DetailFields()
         release = detail_to_release(empty, contract_id=1, jurisdiction_code="vic")
         assert release is None

@@ -1,4 +1,4 @@
-# Contributing to opencontractsau
+# Contributing to opencontractau
 
 Contributors are welcome. The goal is one well-maintained scraper per Australian jurisdiction, producing OCDS v1.1 release packages from publicly-disclosed contract award data.
 
@@ -6,8 +6,8 @@ Contributors are welcome. The goal is one well-maintained scraper per Australian
 
 Every scraper in this repo must:
 
-1. **Identify itself** with a User-Agent string in the format `OpenContractsAU/0.x (+https://github.com/demitonapp/opencontractsau)`.
-2. **Respect robots.txt** for the target host. Use `opencontractsau.scrapers.base.RateLimitedClient`, which checks robots.txt automatically.
+1. **Identify itself** with a User-Agent string in the format `OpenContractsAU/0.x (+https://github.com/demitonapp/opencontractau)`.
+2. **Respect robots.txt** for the target host. Use `opencontractau.scrapers.base.RateLimitedClient`, which checks robots.txt automatically.
 3. **Rate-limit** to one request per three seconds on live scrapers. CKAN/static-file downloads may use a shorter interval (1 second minimum).
 4. **Honour takedown requests.** If a government agency requests removal of data, open an issue immediately and pause that scraper pending resolution.
 5. **Scrape only public, unauthenticated endpoints.** No login bypass, no cookie injection, no credentials.
@@ -15,9 +15,9 @@ Every scraper in this repo must:
 
 ## Adding a new jurisdiction
 
-1. Create `src/opencontractsau/scrapers/{jurisdiction}/scraper.py`.
+1. Create `src/opencontractau/scrapers/{jurisdiction}/scraper.py`.
 2. Implement an async `scrape(...) -> ReleasePackage` function.
-3. Add the jurisdiction to `src/opencontractsau/cli.py` as a new subcommand.
+3. Add the jurisdiction to `src/opencontractau/cli.py` as a new subcommand.
 4. Write transformer tests in `tests/test_{jurisdiction}_transformer.py`.
 5. Update `README.md` jurisdiction table.
 6. Open a PR with the jurisdiction name in the title.

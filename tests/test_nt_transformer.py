@@ -3,7 +3,7 @@
 from decimal import Decimal
 from pathlib import Path
 
-from opencontractsau.transformers.nt import (
+from opencontractau.transformers.nt import (
     _normalise_method,
     is_not_found,
     parse_detail_html,

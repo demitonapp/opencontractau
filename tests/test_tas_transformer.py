@@ -3,7 +3,7 @@
 from decimal import Decimal
 from pathlib import Path
 
-from opencontractsau.transformers.tas import (
+from opencontractau.transformers.tas import (
     _extract_fields,
     _extract_period,
     _extract_suppliers,

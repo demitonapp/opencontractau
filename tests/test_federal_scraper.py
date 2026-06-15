@@ -3,7 +3,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from opencontractsau.scrapers.federal.scraper import (
+from opencontractau.scrapers.federal.scraper import (
     _extract_abn,
     _parse_datetime,
     _parse_decimal,
