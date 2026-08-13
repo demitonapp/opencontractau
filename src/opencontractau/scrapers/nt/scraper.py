@@ -100,6 +100,7 @@ async def scrape(
     max_list_pages: int = 20,
     checkpoint_file: Path | None = None,
     min_interval_s: float = 3.0,
+    max_contracts: int | None = None,
 ) -> ReleasePackage:
     """
     Scrape NT QTOL awarded tenders.
@@ -110,6 +111,15 @@ async def scrape(
         max_list_pages: pages to walk in "recent" mode.
         checkpoint_file: append-only completed-ID resume file.
         min_interval_s: defaults to 3.0 per contributing guide.
+        max_contracts: cap on tenders actually detail-fetched. None (the
+            default) detail-fetches every ID the list walk finds - for the
+            live register (~40 tenders, 9 list pages) that's roughly 49
+            requests at the 3s rate limit, ~150s, well past a 90s
+            per-jurisdiction harvest budget (confirmed: a full run under
+            asyncio.wait_for(timeout=90) raised TimeoutError). _fetch_list_ids
+            already returns IDs newest-first, so a caller with a tight time
+            budget sets this instead of max_list_pages - same shape as VIC's
+            max_contracts, added the same day for the identical reason.
     """
     min_interval_s = max(min_interval_s, 3.0)
 
@@ -136,6 +146,9 @@ async def scrape(
         if seen:
             logger.info("[nt] skipping %d IDs from checkpoint", len(seen))
             ids = [i for i in ids if i not in seen]
+
+        if max_contracts is not None:
+            ids = ids[:max_contracts]
 
         releases: list[Release] = []
         for contract_id in ids:
