@@ -39,10 +39,11 @@ _JURISDICTION_SCRAPERS: dict[str, str] = {
     "NSW_LIVE":       "opencontractau.scrapers.nsw.live",
     "NSW_HISTORICAL": "opencontractau.scrapers.nsw.historical",
     "NT":             "opencontractau.scrapers.nt.scraper",
-    "SA":             "opencontractau.scrapers.sa.scraper",
     "TAS":            "opencontractau.scrapers.tas.scraper",
     "VIC":            "opencontractau.scrapers.vic.scraper",
-    "WA":             "opencontractau.scrapers.wa.scraper",
+    # SA, WA: pulled 2026-08-13 - SA's /contract/search is now login-gated
+    # site-wide, WA's scraper targets the wrong platform entirely and the
+    # real endpoint is Disallow'd in robots.txt. See scraper docstrings.
     # Federal
     "AUSTENDER":      "opencontractau.scrapers.federal.scraper",
     # QLD Local Government (SEQ councils - awarded contract registers)
