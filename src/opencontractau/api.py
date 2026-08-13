@@ -65,6 +65,7 @@ _JURISDICTION_SCRAPERS: dict[str, str] = {
     "WYNDHAM":              "opencontractau.scrapers.vic.councils.wyndham",
     "BOROONDARA":           "opencontractau.scrapers.vic.councils.boroondara",
     "GEELONG":              "opencontractau.scrapers.vic.councils.geelong",
+    "HOBSONS_BAY":          "opencontractau.scrapers.vic.councils.hobsons_bay",
 }
 
 

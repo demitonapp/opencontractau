@@ -54,6 +54,7 @@ _OCID_PREFIXES: dict[str, str] = {
     "WYNDHAM":               "ocau-vic-wyndham",
     "BOROONDARA":            "ocau-vic-boroondara",
     "GEELONG":               "ocau-vic-geelong",
+    "HOBSONS_BAY":           "ocau-vic-hobsonsbay",
 }
 
 _BUYER_IDS: dict[str, str] = {
@@ -77,6 +78,7 @@ _BUYER_IDS: dict[str, str] = {
     "WYNDHAM":              "au-vic-wyndham",
     "BOROONDARA":           "au-vic-boroondara",
     "GEELONG":              "au-vic-geelong",
+    "HOBSONS_BAY":          "au-vic-hobsons-bay",
 }
 
 

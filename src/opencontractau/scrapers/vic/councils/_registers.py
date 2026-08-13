@@ -28,16 +28,23 @@ Shapes seen in the wild (all verified live 2026-08-13):
     ``<p><strong>REF - Title</strong><br>Awarded DATE to:<br>SUPPLIER ...``
     blocks. Geelong uses this, and is the only Victorian register found that
     discloses the supplier's ACN/ABN.
+
+``pdf_table``
+    A two-column PDF linked from the page. Hobsons Bay publishes one per month,
+    so the link is discovered on every run rather than pinned. Neither a value
+    nor a date is published, so those stay None instead of being defaulted.
 """
 
 from __future__ import annotations
 
 import asyncio
+import io
 import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime
 from html import unescape
+from urllib.parse import urljoin
 
 from curl_cffi import requests as curl_requests
 
@@ -71,6 +78,11 @@ class CouncilRegister:
     name: str
     urls: tuple[str, ...]
     parser: str
+    # Set for a register published as a linked document rather than as markup.
+    # The link is DISCOVERED from the page on every run, never hardcoded: the
+    # filename carries the month (contract-register-may-2026.pdf), so a pinned
+    # URL would 404 within weeks and read as an empty register.
+    pdf_link_pattern: str | None = None
 
     def __post_init__(self) -> None:
         if self.parser not in _PARSERS:
@@ -305,10 +317,84 @@ def _parse_paragraph_block(html: str, reg: CouncilRegister) -> list[CouncilContr
     return rows
 
 
+# "Contract 2025.79\nProvision of Tree Maintenance Services" - the reference and
+# the title share one cell, separated by a newline on some pages and a space on
+# others, so the split is on the reference shape rather than the whitespace.
+_PDF_REF_RE = re.compile(
+    r"^\s*Contract\s+(?P<ref>[\w.]+?)\s+(?P<title>\S.*)$",
+    re.IGNORECASE | re.DOTALL,
+)
+
+# "Various", "Various (based on panel)" - a placeholder for a panel award, not a
+# company. Minting a supplier called "Various" is worse than recording nothing.
+_PLACEHOLDER_SUPPLIER_RE = re.compile(r"^\s*various\b", re.IGNORECASE)
+
+
+def pdf_tables_to_rows(
+    tables: list[list[list[str | None]]], reg: CouncilRegister
+) -> list[CouncilContractRow]:
+    """Turn extracted PDF tables into contract rows. Pure - no PDF, no network.
+
+    Split out from the pdfplumber call so the row logic (header skip, panel
+    placeholders, the reference/title split) is testable without checking a
+    binary fixture into the repo.
+    """
+    rows: list[CouncilContractRow] = []
+
+    for table in tables:
+        for raw_row in table:
+            cells = [c for c in (_clean(c or "") for c in raw_row) if c]
+            if len(cells) < 2:
+                continue
+
+            subject, supplier = cells[0], cells[1]
+            if subject.lower() == "contract":  # header
+                continue
+            if _PLACEHOLDER_SUPPLIER_RE.match(supplier):
+                continue
+
+            match = _PDF_REF_RE.match(subject)
+            if match:
+                reference = match.group("ref").rstrip(".")
+                title = _clean(match.group("title"))
+            else:
+                reference, title = None, subject
+
+            if not title:
+                continue
+
+            rows.append(CouncilContractRow(
+                council_key=reg.key,
+                council_name=reg.name,
+                reference=reference,
+                title=title,
+                awarded_to=supplier,
+            ))
+
+    return rows
+
+
+def _parse_pdf_table(pdf_bytes: bytes, reg: CouncilRegister) -> list[CouncilContractRow]:
+    """Two-column register published as a PDF: contract | awarded to.
+
+    Hobsons Bay publishes neither a value nor a date, so every row here is a
+    supplier-and-subject record. award_date stays None rather than being
+    defaulted, which keeps `Award.date` honest; the release still carries a
+    publication date of its own.
+    """
+    import pdfplumber  # imported lazily: only this parser needs it
+
+    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        tables = [t for page in pdf.pages for t in (page.extract_tables() or [])]
+
+    return pdf_tables_to_rows(tables, reg)
+
+
 _PARSERS = {
     "wide_table": _parse_wide_table,
     "key_value_table": _parse_key_value_table,
     "paragraph_block": _parse_paragraph_block,
+    "pdf_table": _parse_pdf_table,
 }
 
 
@@ -338,6 +424,13 @@ REGISTERS: dict[str, CouncilRegister] = {
         urls=("https://www.geelongaustralia.com.au/tenders/article/item/8cbce9be96ea2e1.aspx",),
         parser="paragraph_block",
     ),
+    "HOBSONS_BAY": CouncilRegister(
+        key="HOBSONS_BAY",
+        name="Hobsons Bay City Council",
+        urls=("https://www.hobsonsbay.vic.gov.au/Business/Current-register-of-contracts-awarded-by-Council",),
+        parser="pdf_table",
+        pdf_link_pattern=r'href="([^"]*contract-register[^"]*\.pdf)"',
+    ),
 }
 
 
@@ -345,8 +438,8 @@ REGISTERS: dict[str, CouncilRegister] = {
 # Fetch + scrape
 # ---------------------------------------------------------------------------
 
-async def _fetch(urls: tuple[str, ...], key: str) -> str:
-    """Return the first URL's HTML that comes back usable, else ""."""
+async def _fetch(urls: tuple[str, ...], key: str) -> tuple[str, str]:
+    """Return (html, url) for the first URL that comes back usable, else ("", "")."""
     session = curl_requests.Session()
     loop = asyncio.get_event_loop()
 
@@ -369,12 +462,49 @@ async def _fetch(urls: tuple[str, ...], key: str) -> str:
                 continue
 
             if resp.status_code == 200 and len(resp.text) > 500:
-                return resp.text
+                return resp.text, url
             logger.warning("%s: %s returned %s (%d bytes)", key, url, resp.status_code, len(resp.text))
     finally:
         session.close()
 
-    return ""
+    return "", ""
+
+
+async def _fetch_linked_pdf(html: str, page_url: str, reg: CouncilRegister) -> bytes:
+    """Follow the register link discovered on the page. Empty bytes on miss."""
+    match = re.search(reg.pdf_link_pattern or "", html, re.IGNORECASE)
+    if not match:
+        logger.error("%s: no register document matched on %s", reg.key, page_url)
+        return b""
+
+    href = unescape(match.group(1))
+    url = href if href.startswith("http") else urljoin(page_url, href)
+
+    session = curl_requests.Session()
+    loop = asyncio.get_event_loop()
+    try:
+        await asyncio.sleep(_MIN_INTERVAL_S)
+        resp = await loop.run_in_executor(
+            None,
+            lambda: session.get(
+                url,
+                impersonate=CHROME_IMPERSONATION,
+                timeout=_TIMEOUT_S,
+                allow_redirects=True,
+            ),
+        )
+    except Exception as exc:
+        logger.error("%s: register document %s failed: %s", reg.key, url, exc)
+        return b""
+    finally:
+        session.close()
+
+    if resp.status_code != 200:
+        logger.error("%s: register document %s returned %s", reg.key, url, resp.status_code)
+        return b""
+
+    logger.info("%s: fetched register document %s (%d bytes)", reg.key, url, len(resp.content))
+    return resp.content
 
 
 def parse_register(html: str, reg: CouncilRegister) -> list[CouncilContractRow]:
@@ -387,7 +517,7 @@ async def scrape_register(key: str, **kwargs) -> ReleasePackage:
     reg = REGISTERS[key]
     uri = f"https://github.com/demitonapp/opencontractau/releases/{reg.key}"
 
-    html = await _fetch(reg.urls, reg.key)
+    html, page_url = await _fetch(reg.urls, reg.key)
     if not html:
         logger.error("%s: all register URLs failed", reg.key)
         return ReleasePackage(
@@ -397,7 +527,11 @@ async def scrape_register(key: str, **kwargs) -> ReleasePackage:
             releases=[],
         )
 
-    rows = parse_register(html, reg)
+    if reg.pdf_link_pattern:
+        document = await _fetch_linked_pdf(html, page_url, reg)
+        rows = parse_register(document, reg) if document else []
+    else:
+        rows = parse_register(html, reg)
     releases: list[Release] = [
         release
         for seq, row in enumerate(rows, 1)

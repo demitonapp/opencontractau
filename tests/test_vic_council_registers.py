@@ -10,6 +10,7 @@ from opencontractau.scrapers.vic.councils._registers import (
     REGISTERS,
     _split_company_numbers,
     parse_register,
+    pdf_tables_to_rows,
 )
 from opencontractau.transformers.council import parse_au_date, row_to_release
 
@@ -132,6 +133,49 @@ class TestCompanyNumberSplit:
     ])
     def test_split(self, raw, name, abn, acn):
         assert _split_company_numbers(raw) == (name, abn, acn)
+
+
+class TestHobsonsBayPdfTable:
+    """Rows as pdfplumber hands them over, copied from the May 2026 register."""
+
+    TABLES = [
+        [
+            ["Contract", "", "Awarded to", ""],
+            [None, None, "", None],
+            ["Contract 2025.79\nProvision of Tree Maintenance Services",
+             "Lucas and Co Pty Ltd", None, None],
+            ["Contract 2025.PAU.03\nProcurement Australia Library Collections",
+             "Various (based on panel)", None, None],
+        ],
+        [
+            # Page 2 separates the reference from the title with a space, not a
+            # newline, so the split cannot key on whitespace.
+            ["Contract 2023.13 Telecommunications", "Telstra Limited"],
+            ["Contract 2023.48 Arboriculture Panel", "Various"],
+        ],
+    ]
+
+    def _rows(self):
+        return pdf_tables_to_rows(self.TABLES, REGISTERS["HOBSONS_BAY"])
+
+    def test_header_and_empty_rows_are_skipped(self):
+        assert all(r.title.lower() != "awarded to" for r in self._rows())
+        assert len(self._rows()) == 2
+
+    def test_reference_and_title_split_on_either_separator(self):
+        by_ref = {r.reference: r for r in self._rows()}
+        assert by_ref["2025.79"].title == "Provision of Tree Maintenance Services"
+        assert by_ref["2023.13"].title == "Telecommunications"
+
+    def test_panel_placeholders_are_not_minted_as_suppliers(self):
+        # "Various" and "Various (based on panel)" name no company; recording
+        # them would create a contractor called Various.
+        assert all("various" not in r.awarded_to.lower() for r in self._rows())
+
+    def test_no_value_or_date_is_invented(self):
+        # This register publishes neither. A defaulted date here would be a
+        # fabricated award date, which is what the Wyndham fix was about.
+        assert all(r.value_aud is None and r.award_date is None for r in self._rows())
 
 
 class TestSharedDateParser:
