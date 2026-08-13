@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from html import unescape
 
 _ROW_ID_PATTERN = re.compile(r'<tr id="contractRow(\d+)"', re.IGNORECASE)
 _TAG_PATTERN = re.compile(r"<[^>]+>")
@@ -46,12 +47,9 @@ _CONTRACTOR_FIELD_PATTERN = re.compile(
 
 
 def _strip_html(html: str) -> str:
-    text = _TAG_PATTERN.sub(" ", html)
-    text = (
-        text.replace("&nbsp;", " ")
-        .replace("&amp;", "&")
-        .replace("&#160;", " ")
-    )
+    # Unescape AFTER stripping tags, so a decoded "&lt;" is never mistaken
+    # for a real tag by a pass running the other way round.
+    text = unescape(_TAG_PATTERN.sub(" ", html))
     return _WS_PATTERN.sub(" ", text).strip()
 
 
