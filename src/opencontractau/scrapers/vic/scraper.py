@@ -37,7 +37,7 @@ JURISDICTION_CODE = "vic"
 
 
 async def _enumerate_ids(
-    client: TenderSearchClient, preset: str, max_pages: int
+    client: TenderSearchClient, preset: str, max_pages: int, max_ids: int | None = None
 ) -> list[int]:
     ids: list[int] = []
     seen: set[int] = set()
@@ -58,6 +58,8 @@ async def _enumerate_ids(
         ids.extend(new)
         seen.update(new)
         logger.info("[vic] page %d: %d new IDs (total %d)", page, len(new), len(ids))
+        if max_ids is not None and len(ids) >= max_ids:
+            break
     return ids
 
 
@@ -83,6 +85,7 @@ async def scrape(
     preset: str = "recentlyAwarded",
     max_pages: int = 20,
     min_interval_s: float = 3.0,
+    max_contracts: int | None = None,
 ) -> ReleasePackage:
     """
     Scrape Victoria recently-awarded contracts.
@@ -91,6 +94,14 @@ async def scrape(
         preset: TenderSearch preset (recentlyAwarded, organisationWide, ...)
         max_pages: cap on list pages to walk. Default 20 = 500 contracts.
         min_interval_s: seconds between requests. Default 3.0.
+        max_contracts: cap on contracts actually detail-fetched. None (the
+            default) walks every page up to max_pages and fetches every
+            contract found - a full run over ~470 live contracts takes
+            around 25 minutes at the 3s rate limit. A caller with a tighter
+            time budget (Demiton's harvest gives each jurisdiction 90s) sets
+            this instead; "recentlyAwarded" is already sorted newest-first,
+            so a small cap still returns the most current contracts, just
+            not the full history in one run.
     """
     min_interval_s = max(min_interval_s, 3.0)
 
@@ -98,7 +109,9 @@ async def scrape(
         base_url=BASE_URL,
         min_interval_s=min_interval_s,
     ) as client:
-        ids = await _enumerate_ids(client, preset=preset, max_pages=max_pages)
+        ids = await _enumerate_ids(client, preset=preset, max_pages=max_pages, max_ids=max_contracts)
+        if max_contracts is not None:
+            ids = ids[:max_contracts]
         logger.info("[vic] enumerated %d contract IDs", len(ids))
 
         releases: list[Release] = []

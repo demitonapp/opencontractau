@@ -1,6 +1,6 @@
 [project]
 name = "opencontractau"
-version = "0.12.0"
+version = "0.13.0"
 description = "OC4IDS-compliant scraper for Australian government procurement data"
 authors = [
     { name = "Justin Trollip", email = "justin@demiton.io" },

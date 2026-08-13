@@ -13,11 +13,16 @@ Field locations are stable but not as label-driven as TAS:
 - Award stepper:      <div class="stepper-info-cell active"> entries
 - Agency:             <h3 class="fs-20"> inside light-border block
 - Awarded block:      <div id="accordionAwardedListBody"> contains supplier
-                      name, address, and award amount
+                      name, ABN, address, and award amount
 
-Notable gap: NT does NOT publish supplier ABN. Suppliers identified by
-business name and address only (same as TAS). NT does publish three useful
-flags: Territory Enterprise, Aboriginal Enterprise, Women Owned.
+NT DOES publish supplier ABN, in the awarded block - the "gap" noted here
+until 2026-08-13 was a parsing bug, not a real source gap (see
+_extract_supplier). The block's <p> lines are, in order: legal name (bold),
+an OPTIONAL trading-name line, "ABN: nn nnn nnn nnn", the address, then the
+three flag lines below. Extraction keys off the "ABN:" prefix rather than
+position, since the optional trading-name line otherwise shifts every field
+after it by one. NT also publishes three useful flags: Territory Enterprise,
+Aboriginal Enterprise, Women Owned.
 """
 
 from __future__ import annotations
@@ -32,6 +37,7 @@ from opencontractau.models.ocds import (
     Address,
     Award,
     Contract,
+    Identifier,
     Organization,
     Period,
     Release,
@@ -109,8 +115,13 @@ _SUPPLIER_NAME_PATTERN = re.compile(
     re.IGNORECASE | re.DOTALL,
 )
 
+# Deliberately excludes the bare "m-0" (no font-color-supporting-2) shape:
+# that class alone is the optional trading-name line, and every structured
+# field (ABN, address, the three flags) is under the -supporting-2 variant.
+# Matching both as one group, as this used to, made the trading name
+# indistinguishable from the address whenever a trading name was present.
 _SUPPLIER_DETAIL_PATTERN = re.compile(
-    r'<p[^>]*class="m-0(?:\s+font-color-supporting-2)?"[^>]*>(.*?)</p>',
+    r'<p[^>]*class="m-0\s+font-color-supporting-2"[^>]*>(.*?)</p>',
     re.IGNORECASE | re.DOTALL,
 )
 
@@ -175,18 +186,25 @@ def _extract_award_amount(award_body: str) -> Decimal | None:
     return None
 
 
+_ABN_LINE_PATTERN = re.compile(r"^ABN:\s*([\d\s]+)$", re.IGNORECASE)
+
+
 def _extract_supplier(award_body: str) -> dict | None:
     name_match = _SUPPLIER_NAME_PATTERN.search(award_body)
     if not name_match:
         return None
     name = _strip(name_match.group(1))
 
-    details = [_strip(m.group(1)) for m in _SUPPLIER_DETAIL_PATTERN.finditer(award_body)]
+    # The optional trading-name line is excluded at the regex level (it uses
+    # a different CSS class, see _SUPPLIER_DETAIL_PATTERN), so every line
+    # reaching this loop is either the ABN, one of the three flags, or the
+    # address - the first line matching none of those is unambiguously it.
+    details = [d for m in _SUPPLIER_DETAIL_PATTERN.finditer(award_body) if (d := _strip(m.group(1)))]
+
+    abn = None
     address = None
     flags: dict[str, bool] = {}
     for detail in details:
-        if not detail:
-            continue
         if detail.startswith("Territory Enterprise:"):
             flags["isTerritoryEnterprise"] = detail.endswith("Yes")
         elif detail.startswith("Aboriginal Enterprise:"):
@@ -196,10 +214,15 @@ def _extract_supplier(award_body: str) -> dict | None:
                 flags["isWomenOwned"] = True
             elif detail.endswith("No"):
                 flags["isWomenOwned"] = False
-        elif address is None and not detail.startswith(("Territory", "Aboriginal", "Women")):
+        elif (abn_match := _ABN_LINE_PATTERN.match(detail)):
+            # 11 digits confirms an ABN rather than a malformed line - a bad
+            # match here would otherwise publish a wrong identifier.
+            digits = re.sub(r"\D", "", abn_match.group(1))
+            abn = digits if len(digits) == 11 else None
+        elif address is None:
             address = detail
 
-    return {"name": name, "address": address, "flags": flags}
+    return {"name": name, "address": address, "abn": abn, "flags": flags}
 
 
 def is_not_found(html: str) -> bool:
@@ -263,11 +286,19 @@ def parse_detail_html(html: str, contract_id: int) -> Release | None:
     supplier_orgs: list[Organization] = []
     if supplier_info:
         name = supplier_info["name"]
-        slug = hashlib.sha1(name.encode(), usedforsecurity=False).hexdigest()[:8]
+        abn = supplier_info.get("abn")
+        if abn:
+            supplier_id = f"au-abn-{abn}"
+            identifier = Identifier(scheme="AU-ABN", id=abn, legalName=name)
+        else:
+            slug = hashlib.sha1(name.encode(), usedforsecurity=False).hexdigest()[:8]
+            supplier_id = f"au-nt-supplier-{slug}"
+            identifier = None
         supplier_orgs.append(
             Organization(
-                id=f"au-nt-supplier-{slug}",
+                id=supplier_id,
                 name=name,
+                identifier=identifier,
                 roles=["supplier"],
                 address=Address(streetAddress=supplier_info["address"])
                 if supplier_info["address"]
