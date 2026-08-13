@@ -187,6 +187,7 @@ class TestSharedDateParser:
         ("4/11/2024", "2024-11-04"),    # ambiguous -> day-first (AU source)
         ("23 February 2026", "2026-02-23"),
         ("2026-02-23", "2026-02-23"),
+        ("01-Aug-2016", "2016-08-01"),   # Wollongong's CSV export format
     ])
     def test_parses(self, raw, expected):
         assert parse_au_date(raw).strftime("%Y-%m-%d") == expected

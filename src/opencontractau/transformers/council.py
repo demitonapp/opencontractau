@@ -146,7 +146,10 @@ def parse_au_date(raw: str | None) -> datetime | None:
             logger.debug("council: impossible slash date %r", raw)
             return None
 
-    for fmt in ("%d %B %Y", "%d %b %Y", "%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y", "%B %Y"):
+    # "%d-%b-%Y" ("01-Aug-2016") is Wollongong's CSV export format - dash-
+    # separated with an abbreviated month, distinct from "%d-%m-%Y"'s numeric
+    # month, so it does not collide with the existing dash format.
+    for fmt in ("%d %B %Y", "%d %b %Y", "%d-%b-%Y", "%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y", "%B %Y"):
         try:
             return datetime.strptime(raw.strip(), fmt)
         except ValueError:
