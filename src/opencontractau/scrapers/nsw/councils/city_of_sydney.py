@@ -8,13 +8,28 @@ ABN:       Not disclosed -- supplier name only
 Updates:   Quarterly
 
 Best-in-class NSW council GIPA register: XLSX format with consistent
-column structure. The direct download URL contains a date suffix
-(e.g. gipa-register-2026-04-10.xlsx) so it is discovered at runtime
-by scanning the GIPA page for .xlsx hrefs.
+column structure. The direct download URL contains a month suffix
+(e.g. gipa-report-august.xlsx?download=true) so it is discovered at
+runtime by scanning the GIPA page for .xlsx hrefs.
 
-Verified columns (April 2026):
-  Date | Description | Name of Supplier | Value of Contract ($) |
-  Contract Number | Contract Period
+Verified live (2026-08-13). Two things drifted since the register was
+first built and silently zeroed it out:
+
+1. The link now carries a ``?download=true`` query string after the
+   ``.xlsx`` extension. The discovery regex required the extension to be
+   immediately followed by the closing quote, so it never matched.
+2. The workbook has six sheets; the data lives in "2 - All GIPA
+   Contracts", not whichever sheet the file happens to have open when it
+   was last saved in Excel (``wb.active``, which pointed at the wrong
+   sheet in the version checked). The header labels on that sheet also
+   read "Successful Tenderer Name" / "Contract Name" rather than the
+   "Name of Supplier" / "Description" wording the column matcher was
+   tuned for, so "tenderer" and "contract name" are matched too.
+
+Verified columns (August 2026, sheet "2 - All GIPA Contracts"):
+  Contract Class | Quote or Tender Reference | Contract ID |
+  Successful Tenderer Name | Contract Name | ... | Effective date of
+  contract | ... | Estimated amount payable under the contract | ...
 """
 
 from __future__ import annotations
@@ -46,14 +61,23 @@ BASE_URL = "https://www.cityofsydney.nsw.gov.au"
 COUNCIL_KEY = "SYDNEY_COUNCIL"
 COUNCIL_NAME = "City of Sydney"
 
-_XLSX_PATTERN = re.compile(r'href="([^"]*gipa[^"]*\.xlsx)"', re.IGNORECASE)
-_LINK_PATTERN = re.compile(r'href="([^"]*contracts[^"]*150[^"]*\.xlsx|[^"]*gipa[^"]*register[^"]*\.xlsx)"', re.IGNORECASE)
+_XLSX_PATTERN = re.compile(r'href="([^"]*gipa[^"]*\.xlsx)(?:\?[^"]*)?"', re.IGNORECASE)
+_LINK_PATTERN = re.compile(
+    r'href="([^"]*contracts[^"]*150[^"]*\.xlsx|[^"]*gipa[^"]*register[^"]*\.xlsx)(?:\?[^"]*)?"',
+    re.IGNORECASE,
+)
+
+# Sheet that carries the full register, as opposed to the "1 - Cover" sheet
+# or the "3 - Class 2 & 3" supplementary-fields sheet also present in the
+# workbook - matched by substring so a future rename ("2 - GIPA Contracts")
+# does not silently break discovery the way relying on wb.active did.
+_DATA_SHEET_HINT = "all gipa contracts"
 
 _COL_DATE = ("date", "award date", "date awarded", "contract date")
-_COL_TITLE = ("description", "goods or services", "title", "subject")
-_COL_SUPPLIER = ("supplier", "name of supplier", "contractor", "awarded to", "vendor")
+_COL_TITLE = ("description", "goods or services", "title", "subject", "contract name")
+_COL_SUPPLIER = ("supplier", "name of supplier", "contractor", "awarded to", "vendor", "tenderer")
 _COL_VALUE = ("value", "contract value", "amount", "$")
-_COL_REF = ("contract number", "reference", "contract ref", "contract no", "number")
+_COL_REF = ("contract number", "reference", "contract ref", "contract no", "number", "contract id")
 
 
 def _match_col(headers: list[str], candidates: tuple[str, ...]) -> int | None:
@@ -72,7 +96,10 @@ def _parse_xlsx(xlsx_bytes: bytes) -> list[CouncilContractRow]:
         return []
 
     wb = load_workbook(io.BytesIO(xlsx_bytes), read_only=True, data_only=True)
-    ws = wb.active
+    ws = next(
+        (wb[name] for name in wb.sheetnames if _DATA_SHEET_HINT in name.lower()),
+        wb.active,
+    )
 
     rows: list[tuple] = list(ws.iter_rows(values_only=True))
     wb.close()

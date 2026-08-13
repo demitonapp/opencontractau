@@ -1,129 +1,120 @@
 """
 Northern Beaches Council awarded contract register scraper.
 
-Source:    northernbeaches.nsw.gov.au/council/tenders/contracts-register
-Format:    HTML table (sortable, ~90+ entries per page)
+Source:    pubapp.northernbeaches.nsw.gov.au/contracts/contractdata.ashx
+Format:    JSON (jQuery AJAX endpoint behind the public register page)
 Threshold: AU$150,000 (NSW GIPA Act 2009)
 ABN:       Not disclosed
 Updates:   Ongoing (regularly maintained)
 
-The register is an HTML table published on the council's website.
-Two date-range pages: current year and pre-July 2025 archive.
+The council's own contracts-register page (northernbeaches.nsw.gov.au/
+council/tenders/contracts-register) renders no table at all: the register
+is embedded via an <iframe id="contracts-iframe"> pointing at a separate
+subdomain (pubapp.northernbeaches.nsw.gov.au/contracts/contracts.ashx),
+and that shell page in turn loads its data with a jQuery
+``$.ajax({url: 'contractdata.ashx', dataType: 'json'})`` call (see its
+js/contracts.js). Verified live (2026-08-13): the JSON endpoint itself is
+open, needs no iframe or JS execution, and returns every contract in one
+response - simpler and more reliable than the HTML-table shape this
+scraper originally assumed.
+
+Verified JSON shape (one entry of ``response["Contract"]``):
+  {"Class": "CLASS 1", "ID": 924, "Number": "000924",
+   "Name": "...", "SuccessfulTenderer": "...", "TendererAddress": "...",
+   "StartDate": "02/01/2026", "StartDateSort": "2026-01-02",
+   "EndDate": "...", "EndDateSort": "...", "AmountPayable": 959219.8, ...}
+
+``AmountPayable`` is already a JSON number, and ``StartDateSort`` is
+ISO-formatted - both are used directly rather than re-parsing the
+locale-formatted ``AmountPayable``-adjacent string fields the HTML
+version of this scraper used to scrape out of table cells.
 """
 
 from __future__ import annotations
 
 import logging
-import re
 from datetime import datetime
+from decimal import Decimal
 
 import httpx
 
 from opencontractau.models.ocds import Publisher, Release, ReleasePackage
 from opencontractau.scrapers.base import BROWSER_UA
-from opencontractau.scrapers.qld.councils._client import extract_tables
-from opencontractau.transformers.council import (
-    CouncilContractRow,
-    parse_au_date,
-    parse_value,
-    row_to_release,
-)
+from opencontractau.transformers.council import CouncilContractRow, row_to_release
 
 logger = logging.getLogger(__name__)
 
-REGISTER_URLS = [
-    "https://www.northernbeaches.nsw.gov.au/council/tenders/contracts-register",
-    "https://www.northernbeaches.nsw.gov.au/council/tenders/contracts-register/contracts-prior-1-july-2025",
-]
+DATA_URL = "https://pubapp.northernbeaches.nsw.gov.au/contracts/contractdata.ashx"
 
 COUNCIL_KEY = "NORTHERN_BEACHES"
 COUNCIL_NAME = "Northern Beaches Council"
 
 
-def _find_col(headers: list[str], *fragments: str) -> int | None:
-    for i, h in enumerate(headers):
-        if any(f.lower() in h.lower() for f in fragments):
-            return i
-    return None
-
-
-def _parse_rows(html: str) -> list[CouncilContractRow]:
-    tables = extract_tables(html)
-    if not tables:
+def _parse_contracts(payload: dict) -> list[CouncilContractRow]:
+    error = payload.get("Error")
+    if error:
+        logger.error("NORTHERN_BEACHES: API returned an error: %s", error)
         return []
-
-    best: list[list[str]] | None = None
-    for t in tables:
-        if not t or len(t) < 2:
-            continue
-        header = " ".join(t[0]).lower()
-        if any(k in header for k in ("contractor", "supplier", "awarded", "contract", "description")):
-            best = t
-            break
-    if best is None:
-        best = max(tables, key=len) if tables else None
-    if not best or len(best) < 2:
-        return []
-
-    headers = [h.strip() for h in best[0]]
-    col_ref = _find_col(headers, "contract no", "reference", "number", "ref", "id")
-    col_title = _find_col(headers, "description", "title", "subject", "contract name", "purpose")
-    col_supplier = _find_col(headers, "contractor", "supplier", "awarded to", "vendor", "company")
-    col_value = _find_col(headers, "value", "amount", "contract value", "$")
-    col_date = _find_col(headers, "award date", "date awarded", "date", "commence", "signed")
-
-    if col_supplier is None:
-        col_supplier = 1 if len(headers) > 1 else 0
-    if col_title is None:
-        col_title = 0
 
     rows: list[CouncilContractRow] = []
-    for data_row in best[1:]:
-        padded = data_row + [""] * (len(headers) - len(data_row))
-        supplier = padded[col_supplier].strip() if col_supplier is not None else ""
+    for contract in payload.get("Contract", []):
+        supplier = (contract.get("SuccessfulTenderer") or "").strip()
         if not supplier:
             continue
-        title = padded[col_title].strip() if col_title is not None else ""
-        value_raw = padded[col_value].strip() if col_value is not None else ""
-        date_raw = padded[col_date].strip() if col_date is not None else ""
-        ref = padded[col_ref].strip() if col_ref is not None else None
+
+        amount = contract.get("AmountPayable")
+        value_aud = Decimal(str(amount)) if isinstance(amount, (int, float)) else None
+
+        award_date: datetime | None = None
+        start_sort = contract.get("StartDateSort")
+        if start_sort:
+            try:
+                award_date = datetime.strptime(start_sort, "%Y-%m-%d")
+            except ValueError:
+                pass
+
+        end_date: datetime | None = None
+        end_sort = contract.get("EndDateSort")
+        if end_sort:
+            try:
+                end_date = datetime.strptime(end_sort, "%Y-%m-%d")
+            except ValueError:
+                pass
+
+        number = (contract.get("Number") or "").strip() or None
+        name = (contract.get("Name") or "").strip()
 
         rows.append(CouncilContractRow(
             council_key=COUNCIL_KEY,
             council_name=COUNCIL_NAME,
-            reference=ref or None,
-            title=title or f"Northern Beaches Contract - {supplier}",
+            reference=number,
+            title=name or f"Northern Beaches Contract - {supplier}",
             awarded_to=supplier,
-            value_aud=parse_value(value_raw),
-            award_date=parse_au_date(date_raw),
+            value_aud=value_aud,
+            award_date=award_date,
+            start_date=award_date,
+            end_date=end_date,
+            procurement_method=(contract.get("TenderMethod") or "").strip() or None,
         ))
 
-    logger.info("NORTHERN_BEACHES: parsed %d rows from page", len(rows))
+    logger.info("NORTHERN_BEACHES: parsed %d rows", len(rows))
     return rows
 
 
 async def scrape(**kwargs) -> ReleasePackage:
-    """Fetch and parse the Northern Beaches Council contracts register."""
-    all_rows: list[CouncilContractRow] = []
-    async with httpx.AsyncClient(
-        timeout=60.0,
-        headers={"User-Agent": BROWSER_UA},
-        follow_redirects=True,
-    ) as client:
-        for url in REGISTER_URLS:
-            try:
-                resp = await client.get(url)
-                resp.raise_for_status()
-                rows = _parse_rows(resp.text)
-                all_rows.extend(rows)
-            except Exception as exc:
-                logger.warning("NORTHERN_BEACHES: %s failed: %s", url, exc)
+    """Fetch and parse the Northern Beaches Council contracts JSON API."""
+    uri = f"https://github.com/demitonapp/opencontractau/releases/{COUNCIL_KEY}"
 
-    releases: list[Release] = [r for seq, row in enumerate(all_rows, 1) if (r := row_to_release(row, seq=seq))]
+    async with httpx.AsyncClient(timeout=60.0, headers={"User-Agent": BROWSER_UA}) as client:
+        try:
+            resp = await client.get(DATA_URL)
+            resp.raise_for_status()
+            payload = resp.json()
+        except Exception as exc:
+            logger.error("NORTHERN_BEACHES: contractdata.ashx fetch failed: %s", exc)
+            return ReleasePackage(uri=uri, publishedDate=datetime.utcnow(), publisher=Publisher(), releases=[])
+
+    rows = _parse_contracts(payload)
+    releases: list[Release] = [r for seq, row in enumerate(rows, 1) if (r := row_to_release(row, seq=seq))]
     logger.info("NORTHERN_BEACHES: %d releases ready", len(releases))
-    return ReleasePackage(
-        uri=f"https://github.com/demitonapp/opencontractau/releases/{COUNCIL_KEY}",
-        publishedDate=datetime.utcnow(),
-        publisher=Publisher(),
-        releases=releases,
-    )
+    return ReleasePackage(uri=uri, publishedDate=datetime.utcnow(), publisher=Publisher(), releases=releases)

@@ -48,6 +48,7 @@ _OCID_PREFIXES: dict[str, str] = {
     "BLACKTOWN":        "ocau-nsw-blacktown",
     "CUMBERLAND":       "ocau-nsw-cumberland",
     "LIVERPOOL_NSW":    "ocau-nsw-liverpool",
+    "CENTRAL_COAST_NSW": "ocau-nsw-centralcoast",
     # VIC councils
     "MELBOURNE":             "ocau-vic-melbourne",
     "MORNINGTON_PENINSULA":  "ocau-vic-mornpen",
@@ -72,6 +73,7 @@ _BUYER_IDS: dict[str, str] = {
     "BLACKTOWN":        "au-nsw-blacktown",
     "CUMBERLAND":       "au-nsw-cumberland",
     "LIVERPOOL_NSW":    "au-nsw-liverpool",
+    "CENTRAL_COAST_NSW": "au-nsw-central-coast",
     # VIC councils
     "MELBOURNE":            "au-vic-melbourne",
     "MORNINGTON_PENINSULA": "au-vic-mornpen",
