@@ -6,6 +6,7 @@ from pathlib import Path
 from opencontractau.scrapers._tendersearch.parser import (
     parse_contract_ids,
     parse_detail_html,
+    _strip_html,
 )
 from opencontractau.scrapers._tendersearch.transformer import (
     _clean_abn,
@@ -26,6 +27,16 @@ class TestParseContractIds:
 
     def test_no_matches(self):
         assert parse_contract_ids("<html><body>no rows</body></html>") == []
+
+
+class TestStripHtmlEntities:
+    def test_html_entities_are_decoded_not_left_literal(self):
+        # Only &nbsp;/&amp;/&#160; were unescaped before; a contractor named
+        # "O'Brien Traffic" (&#39;) or a value with a literal slash (&#x2f;)
+        # would be wrong on the page, not just ugly.
+        assert _strip_html("<b>O&#39;Brien Traffic</b>") == "O'Brien Traffic"
+        assert _strip_html("CAN-LAHC 2026&#x2f;176") == "CAN-LAHC 2026/176"
+        assert _strip_html("Tom &amp; Jerry&rsquo;s &lt;Co&gt;") == "Tom & Jerry’s <Co>"
 
 
 class TestParseDate:
