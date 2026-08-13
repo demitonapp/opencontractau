@@ -22,6 +22,7 @@ from typing import Optional
 from opencontractau.models.ocds import (
     Award,
     Contract,
+    Identifier,
     Organization,
     Period,
     Release,
@@ -50,6 +51,9 @@ _OCID_PREFIXES: dict[str, str] = {
     # VIC councils
     "MELBOURNE":             "ocau-vic-melbourne",
     "MORNINGTON_PENINSULA":  "ocau-vic-mornpen",
+    "WYNDHAM":               "ocau-vic-wyndham",
+    "BOROONDARA":            "ocau-vic-boroondara",
+    "GEELONG":               "ocau-vic-geelong",
 }
 
 _BUYER_IDS: dict[str, str] = {
@@ -70,6 +74,9 @@ _BUYER_IDS: dict[str, str] = {
     # VIC councils
     "MELBOURNE":            "au-vic-melbourne",
     "MORNINGTON_PENINSULA": "au-vic-mornpen",
+    "WYNDHAM":              "au-vic-wyndham",
+    "BOROONDARA":           "au-vic-boroondara",
+    "GEELONG":              "au-vic-geelong",
 }
 
 
@@ -88,6 +95,12 @@ class CouncilContractRow:
     end_date: Optional[datetime] = None
     description: Optional[str] = None
     procurement_method: Optional[str] = None
+    # Most councils disclose a supplier name only. The few that publish a
+    # company number (Geelong prints ACN, and ABN for trusts) are worth
+    # carrying through verbatim: an ABN resolves onto the identity spine
+    # directly instead of being guessed from the name after ingestion.
+    supplier_abn: Optional[str] = None
+    supplier_acn: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -95,10 +108,43 @@ class CouncilContractRow:
 # ---------------------------------------------------------------------------
 
 
+def _digits(raw: str | None) -> str | None:
+    """Strip the spacing councils print inside ABNs/ACNs. Length-checked so a
+    malformed number is dropped rather than published as an identifier."""
+    if not raw:
+        return None
+    digits = re.sub(r"\D", "", raw)
+    return digits if len(digits) in (9, 11) else None
+
+
+_SLASH_DATE_RE = re.compile(r"^\s*(\d{1,2})/(\d{1,2})/(\d{4})\s*$")
+
+
 def parse_au_date(raw: str | None) -> datetime | None:
+    """Parse a council register date.
+
+    Slash dates get their own pass because registers are not internally
+    consistent: Wyndham's publishes both ``13/03/2025`` (d/m/Y) and
+    ``2/16/2021`` (m/d/Y) in the same table, a CMS export artifact. Trying
+    ``%d/%m/%Y`` alone silently returned None for every m/d/Y row, and the
+    caller then stamped the release with ``utcnow()`` - a 2021 award dated
+    today. Whichever component exceeds 12 settles the order; a genuinely
+    ambiguous date falls back to day-first, this being an Australian source.
+    """
     if not raw or not raw.strip():
         return None
-    for fmt in ("%d/%m/%Y", "%d %B %Y", "%d %b %Y", "%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y", "%B %Y"):
+
+    slash = _SLASH_DATE_RE.match(raw)
+    if slash:
+        first, second, year = (int(g) for g in slash.groups())
+        day, month = (first, second) if second <= 12 else (second, first)
+        try:
+            return datetime(year, month, day)
+        except ValueError:
+            logger.debug("council: impossible slash date %r", raw)
+            return None
+
+    for fmt in ("%d %B %Y", "%d %b %Y", "%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y", "%B %Y"):
         try:
             return datetime.strptime(raw.strip(), fmt)
         except ValueError:
@@ -180,14 +226,26 @@ def row_to_release(row: CouncilContractRow, seq: int = 1) -> Release | None:
     buyer_id = _BUYER_IDS.get(row.council_key, f"au-council-{row.council_key.lower()}")
     buyer = Organization(id=buyer_id, name=row.council_name, roles=["buyer"])
 
-    # No ABN -- use name-based org ID so the pipeline can resolve later
-    supplier_id = (
-        f"au-name-{hashlib.sha1(row.awarded_to.encode(), usedforsecurity=False).hexdigest()[:10]}"
-    )
+    # Prefer a disclosed company number; fall back to the name-based org ID so
+    # the pipeline can resolve via ABR search_by_name after ingestion.
+    abn = _digits(row.supplier_abn)
+    acn = _digits(row.supplier_acn)
+    if abn:
+        supplier_id = f"au-abn-{abn}"
+        identifier = Identifier(scheme="AU-ABN", id=abn, legalName=row.awarded_to.strip() or None)
+    elif acn:
+        supplier_id = f"au-acn-{acn}"
+        identifier = Identifier(scheme="AU-ACN", id=acn, legalName=row.awarded_to.strip() or None)
+    else:
+        supplier_id = (
+            f"au-name-{hashlib.sha1(row.awarded_to.encode(), usedforsecurity=False).hexdigest()[:10]}"
+        )
+        identifier = None
+
     supplier = Organization(
         id=supplier_id,
         name=row.awarded_to.strip() or "Unknown Supplier",
-        identifier=None,  # resolved post-ingest via ABR search_by_name
+        identifier=identifier,
         roles=["supplier"],
     )
 

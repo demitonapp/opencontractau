@@ -62,6 +62,9 @@ _JURISDICTION_SCRAPERS: dict[str, str] = {
     # VIC Local Government (awarded contract registers)
     "MELBOURNE":            "opencontractau.scrapers.vic.councils.melbourne",
     "MORNINGTON_PENINSULA": "opencontractau.scrapers.vic.councils.mornington_peninsula",
+    "WYNDHAM":              "opencontractau.scrapers.vic.councils.wyndham",
+    "BOROONDARA":           "opencontractau.scrapers.vic.councils.boroondara",
+    "GEELONG":              "opencontractau.scrapers.vic.councils.geelong",
 }
 
 
